@@ -9,14 +9,12 @@ import (
 )
 
 func main() {
-	var log logger.Logger = logger.NewZerologLogger()
-
-	envErr := loadenv.Local()
-	if envErr != nil {
-		log.Fatal("cannot start locally", "error", envErr)
+	if err := loadenv.Local(); err != nil {
+		panic("cannot start locally: " + err.Error())
 	}
 
-	environment := os.Getenv("ENVIRONMENT")
-	msg := "environment variable ENVIRONMENT: " + environment
-	log.Info(msg)
+	var log logger.Logger = logger.NewZerologLogger()
+
+	log.Debug("this message appears when env DEBUG is true", "debug", os.Getenv("DEBUG"))
+	log.Info("starting app")
 }

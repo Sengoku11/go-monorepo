@@ -4,6 +4,8 @@
 package logger
 
 import (
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -18,6 +20,10 @@ type Logger interface {
 	//	log.Info("hello", "someKey", "string value").
 	Info(message string, args ...any)
 
+	// Debug logs a message at the info level if env DEBUG is set to true.
+	Debug(message string, args ...any)
+
+	// Fatal logs a message at the fatal level and terminates the app with os.Exit(1)
 	Fatal(message string, args ...any)
 }
 
@@ -29,10 +35,20 @@ type ZerologLogger struct {
 
 // NewZerologLogger creates a new instance of ZerologLogger.
 func NewZerologLogger() *ZerologLogger {
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	// Configure zerolog logger
 	consoleWriter := zerolog.NewConsoleWriter()
 	consoleWriter.TimeFormat = time.DateTime
-
 	logger := zerolog.New(consoleWriter).With().Timestamp().Logger()
+
+	// Set debug mode on if enabled
+	debug, err := strconv.ParseBool(os.Getenv("DEBUG"))
+	if err != nil {
+		logger.Error().Msg("DEBUG environment variable is not set, defaulting to false")
+	} else if debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
 
 	return &ZerologLogger{logger: &logger}
 }
@@ -40,6 +56,11 @@ func NewZerologLogger() *ZerologLogger {
 // Info logs a message at the info level.
 func (l *ZerologLogger) Info(message string, args ...any) {
 	l.logger.Info().Fields(args).Msg(message)
+}
+
+// Debug logs a message at the info level if env DEBUG is set to true.
+func (l *ZerologLogger) Debug(message string, args ...any) {
+	l.logger.Debug().Fields(args).Msg(message)
 }
 
 // Fatal logs a message at the fatal level and terminates the app with os.Exit(1).
