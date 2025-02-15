@@ -1,0 +1,26 @@
+run:
+  timeout: 5m
+  tests: true
+  concurrency: 4
+
+issues:
+  # Exclude directories that are not part of your source code.
+  exclude-dirs:
+    - vendor
+  # Exclude files such as generated files.
+  exclude-files:
+    - ".*_generated.go"
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-use-default: false
+
+linters:
+  enable-all: true
+  disable:
+    - exportloopref
+    - depguard  # Have issues with go.work style
+
+linters-settings:
+  govet:
+    # Enable shadow checking (replacing the deprecated check-shadowing).
+    shadow: true

@@ -1,0 +1,38 @@
+# === OS & Editor Files ===
+.DS_Store
+Thumbs.db
+# Vim swap files, etc.
+*.swp
+*~
+
+# === Go Build Artifacts ===
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Coverage output
+*.out
+
+# Env secrets
+.env
+
+# Compiled object files
+*.o
+*.a
+
+# Build output and vendor directories
+bin/
+build/
+vendor/
+
+# === Log Files ===
+*.log
+
+# === IDE & Editor Directories ===
+.vscode/
+.idea/
