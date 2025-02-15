@@ -2,7 +2,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/Sengoku11/go-monorepo/pkg/loadenv"
@@ -14,8 +13,7 @@ func main() {
 
 	envErr := loadenv.Local()
 	if envErr != nil {
-		msg := fmt.Sprintf("cannot start locally: %s", envErr)
-		log.Fatal(msg)
+		log.Fatal("cannot start locally", "error", envErr)
 	}
 
 	environment := os.Getenv("ENVIRONMENT")
