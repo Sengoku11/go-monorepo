@@ -17,8 +17,9 @@ issues:
 linters:
   enable-all: true
   disable:
-    - tenv # deprecated (since v1.64.0) due to: replaced by usetesting.
+    - tenv      # deprecated (since v1.64.0) due to: replaced by usetesting.
     - depguard  # Have issues with go.work style
+    - godox     # will have a lot of todo
 
 linters-settings:
   govet:

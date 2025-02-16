@@ -4,15 +4,20 @@
 package logger
 
 import (
+	"context"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/Sengoku11/go-monorepo/pkg/alerter"
 	"github.com/rs/zerolog"
 )
 
 // Logger defines the minimal logging interface. It can be extended with more methods as needed.
 type Logger interface {
+	// AddHook for sending alerts to messengers.
+	AddHook(hook alerter.Alerter)
+
 	// Info logs a message at the info level. Optional key/value pairs can be provided for structured logging.
 	//
 	// Example:
@@ -23,14 +28,24 @@ type Logger interface {
 	// Debug logs a message at the info level if env DEBUG is set to true.
 	Debug(message string, args ...any)
 
+	// Warn logs a message at the warn level.
+	Warn(message string, args ...any)
+
+	// Error logs a message at the error level.
+	Error(message string, args ...any)
+
 	// Fatal logs a message at the fatal level and terminates the app with os.Exit(1)
 	Fatal(message string, args ...any)
+
+	// AlertInfo logs at the info level and sends alert to connected hooks.
+	AlertInfo(ctx context.Context, message string, options alerter.Options, args ...any)
 }
 
 // ZerologLogger is an implementation of Logger interface using zerolog package.
 // It leverages zero-allocation for efficient, structured logging.
 type ZerologLogger struct {
 	logger *zerolog.Logger
+	hooks  []alerter.Alerter
 }
 
 // NewZerologLogger creates a new instance of ZerologLogger.
@@ -50,7 +65,12 @@ func NewZerologLogger() *ZerologLogger {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	return &ZerologLogger{logger: &logger}
+	return &ZerologLogger{logger: &logger, hooks: make([]alerter.Alerter, 0)}
+}
+
+// AddHook for sending alerts to messengers.
+func (l *ZerologLogger) AddHook(hook alerter.Alerter) {
+	l.hooks = append(l.hooks, hook)
 }
 
 // Info logs a message at the info level.
@@ -63,9 +83,39 @@ func (l *ZerologLogger) Debug(message string, args ...any) {
 	l.logger.Debug().Fields(args).Msg(message)
 }
 
+// Warn logs a message at the warn level.
+func (l *ZerologLogger) Warn(message string, args ...any) {
+	l.logger.Warn().Fields(args).Msg(message)
+}
+
+// Error logs a message at the error level.
+func (l *ZerologLogger) Error(message string, args ...any) {
+	l.logger.Error().Fields(args).Msg(message)
+}
+
 // Fatal logs a message at the fatal level and terminates the app with os.Exit(1).
 func (l *ZerologLogger) Fatal(message string, args ...any) {
 	l.logger.Fatal().Fields(args).Msg(message)
+}
+
+// AlertInfo logs at the info level and sends alert to connected hook.
+func (l *ZerologLogger) AlertInfo(ctx context.Context, message string, options alerter.Options, args ...any) {
+	l.logger.Info().Fields(args).Msg(message)
+
+	event := alerter.Event{
+		Message:    message,
+		Level:      alerter.InfoLevel,
+		Options:    options,
+		StructLogs: args,
+	}
+
+	// TODO: wait group
+	for _, hook := range l.hooks {
+		err := hook.Alert(ctx, event)
+		if err != nil {
+			l.logger.Err(err).Msg("failed to send alert")
+		}
+	}
 }
 
 var _ Logger = (*ZerologLogger)(nil)

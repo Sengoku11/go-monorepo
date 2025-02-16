@@ -10,7 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var errGoWorkNotFound = errors.New(`cannot find go.work file`)
+var errGoWorkNotFound = errors.New(`go.work file not found`)
 
 // Local attempts to load an env file located at the go.work folder.
 // It returns error if the ENVIRONMENT is local and an env file couldn't be loaded.
@@ -21,12 +21,12 @@ func Local() error {
 		}
 	}
 
-	rootFolder, err := findGoWorkRoot()
+	workspaceFolder, err := findGoWorkRoot()
 	if err != nil {
-		return fmt.Errorf("cannot find .env file: %w", err)
+		return fmt.Errorf("cannot find workspace folder: %w", err)
 	}
 
-	path := filepath.Join(rootFolder, ".env")
+	path := filepath.Join(workspaceFolder, ".env")
 
 	err = godotenv.Load(path)
 	if err != nil {
