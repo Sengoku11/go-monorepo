@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
+	"github.com/Sengoku11/go-monorepo/pkg/alerter/channels"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/slack"
 	"github.com/Sengoku11/go-monorepo/pkg/loadenv"
 	"github.com/Sengoku11/go-monorepo/pkg/logger"
@@ -33,5 +34,5 @@ func main() {
 	log.Error("intentionally failed", "error", err3)
 
 	log.AddHook(slack.New())
-	log.AlertInfo(ctx, "this is alert", alerter.DefaultOpts("batyr-test"), "someData", 1)
+	log.AlertInfo(ctx, "this is alert", alerter.DefaultOpts(channels.TEST), "someData", 1)
 }

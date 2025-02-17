@@ -25,7 +25,7 @@ type Logger interface {
 	//	log.Info("hello", "someKey", "string value").
 	Info(message string, args ...any)
 
-	// Debug logs a message at the info level if env DEBUG is set to true.
+	// Debug logs a message at the info level if env "DEBUG" is set to true.
 	Debug(message string, args ...any)
 
 	// Warn logs a message at the warn level.
@@ -102,18 +102,21 @@ func (l *ZerologLogger) Fatal(message string, args ...any) {
 func (l *ZerologLogger) AlertInfo(ctx context.Context, message string, options alerter.Options, args ...any) {
 	l.logger.Info().Fields(args).Msg(message)
 
+	l.sendAlert(ctx, message, options, args)
+}
+
+func (l *ZerologLogger) sendAlert(ctx context.Context, message string, options alerter.Options, _ ...any) {
+	// TODO: add fields and format the message
 	event := alerter.Event{
-		Message:    message,
-		Level:      alerter.InfoLevel,
-		Options:    options,
-		StructLogs: args,
+		Message: message,
+		Options: options,
 	}
 
 	// TODO: wait group
 	for _, hook := range l.hooks {
 		err := hook.Alert(ctx, event)
 		if err != nil {
-			l.logger.Err(err).Msg("failed to send alert")
+			l.logger.Err(err).Msgf(`failed to send %s alert`, options.ChannelSuffix)
 		}
 	}
 }
