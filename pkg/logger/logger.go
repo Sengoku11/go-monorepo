@@ -5,6 +5,7 @@ package logger
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strconv"
 	"sync"
@@ -13,6 +14,8 @@ import (
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
 	"github.com/rs/zerolog"
 )
+
+const alertTimeout = time.Second * 2
 
 // Logger defines the minimal logging interface. It can be extended with more methods as needed.
 type Logger interface {
@@ -114,6 +117,9 @@ func (l *ZerologLogger) Alert(ctx context.Context, message string, options alert
 		Options: options,
 	}
 
+	timeoutCtx, cancel := context.WithTimeout(ctx, alertTimeout)
+	defer cancel()
+
 	var wg sync.WaitGroup
 	for _, hook := range l.hooks {
 		wg.Add(1)
@@ -121,14 +127,25 @@ func (l *ZerologLogger) Alert(ctx context.Context, message string, options alert
 		go func(h alerter.Alerter) {
 			defer wg.Done()
 
-			err := h.Alert(ctx, event)
-			if err != nil {
+			err := h.Alert(timeoutCtx, event)
+			if errors.Is(err, context.DeadlineExceeded) {
+				l.logger.Error().Msgf("hook timed out")
+			} else if err != nil {
 				l.logger.Err(err).Msgf(`failed to send %s alert`, options.ChannelSuffix)
 			}
 		}(hook)
 	}
 
-	wg.Wait()
+	wgChan := make(chan any)
+	go func() {
+		wg.Wait()
+		close(wgChan)
+	}()
+
+	select {
+	case <-ctx.Done():
+	case <-wgChan:
+	}
 }
 
 var _ Logger = (*ZerologLogger)(nil)
