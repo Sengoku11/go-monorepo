@@ -25,3 +25,6 @@ linters-settings:
   govet:
     # Enable shadow checking (replacing the deprecated check-shadowing).
     shadow: true
+  varnamelen:
+    ignore-decls:
+      - wg sync.WaitGroup

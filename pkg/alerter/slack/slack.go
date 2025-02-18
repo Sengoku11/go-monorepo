@@ -11,21 +11,28 @@ import (
 	"github.com/slack-go/slack"
 )
 
-// ErrChannelNotFound -- you probably haven't created SLACK_ env for a given prefix.
-var ErrChannelNotFound = errors.New("channel not found")
+var (
+	errChannelNotFound = errors.New("channel not found")
+	errTokenNotFound   = errors.New("SLACK_API_TOKEN environment variable not set")
+)
 
 // Alerter is a Slack implementation of alerter.Alerter interface.
 type Alerter struct {
 	client *slack.Client
 }
 
-// New constructs Alerter with "SLACK_API_TOKEN" env.
-func New() *Alerter {
+// New instance of Alerter with "SLACK_API_TOKEN" env.
+func New() (*Alerter, error) {
+	token := os.Getenv("SLACK_API_TOKEN")
+	if token == "" {
+		return nil, errTokenNotFound
+	}
+
 	client := slack.New(os.Getenv("SLACK_API_TOKEN"))
 
 	return &Alerter{
 		client: client,
-	}
+	}, nil
 }
 
 // Alert given event to the Slack channel.
@@ -34,7 +41,7 @@ func (a *Alerter) Alert(ctx context.Context, event alerter.Event) error {
 
 	channel := getChannel(event.Options.ChannelSuffix)
 	if channel == "" {
-		return ErrChannelNotFound
+		return fmt.Errorf(`env SLACK_%s not defined: %w`, event.Options.ChannelSuffix, errChannelNotFound)
 	}
 
 	_, _, err := a.client.PostMessageContext(ctx, channel, slack.MsgOptionText(text, false))

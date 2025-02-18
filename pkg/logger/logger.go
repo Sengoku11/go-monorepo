@@ -7,6 +7,7 @@ import (
 	"context"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
@@ -37,8 +38,11 @@ type Logger interface {
 	// Fatal logs a message at the fatal level and terminates the app with os.Exit(1)
 	Fatal(message string, args ...any)
 
-	// AlertInfo logs at the info level and sends alert to connected hooks.
-	AlertInfo(ctx context.Context, message string, options alerter.Options, args ...any)
+	// Panic logs a message at the panic level and then panics, which stops the ordinary flow of a goroutine.
+	Panic(message string, args ...any)
+
+	// Alert the message to connected hooks.
+	Alert(ctx context.Context, message string, options alerter.Options)
 }
 
 // ZerologLogger is an implementation of Logger interface using zerolog package.
@@ -98,27 +102,33 @@ func (l *ZerologLogger) Fatal(message string, args ...any) {
 	l.logger.Fatal().Fields(args).Msg(message)
 }
 
-// AlertInfo logs at the info level and sends alert to connected hook.
-func (l *ZerologLogger) AlertInfo(ctx context.Context, message string, options alerter.Options, args ...any) {
-	l.logger.Info().Fields(args).Msg(message)
-
-	l.sendAlert(ctx, message, options, args)
+// Panic logs a message at the panic level and then panics, which stops the ordinary flow of a goroutine.
+func (l *ZerologLogger) Panic(message string, args ...any) {
+	l.logger.Panic().Fields(args).Msg(message)
 }
 
-func (l *ZerologLogger) sendAlert(ctx context.Context, message string, options alerter.Options, _ ...any) {
-	// TODO: add fields and format the message
+// Alert the message to connected hooks.
+func (l *ZerologLogger) Alert(ctx context.Context, message string, options alerter.Options) {
 	event := alerter.Event{
 		Message: message,
 		Options: options,
 	}
 
-	// TODO: wait group
+	var wg sync.WaitGroup
 	for _, hook := range l.hooks {
-		err := hook.Alert(ctx, event)
-		if err != nil {
-			l.logger.Err(err).Msgf(`failed to send %s alert`, options.ChannelSuffix)
-		}
+		wg.Add(1)
+
+		go func(h alerter.Alerter) {
+			defer wg.Done()
+
+			err := h.Alert(ctx, event)
+			if err != nil {
+				l.logger.Err(err).Msgf(`failed to send %s alert`, options.ChannelSuffix)
+			}
+		}(hook)
 	}
+
+	wg.Wait()
 }
 
 var _ Logger = (*ZerologLogger)(nil)
