@@ -39,5 +39,6 @@ func main() {
 
 	log.AddHook(slackAlerter)
 	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST))
-	log.Warn("alert was sent")
+	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST))
+	log.Warn("only one alert was sent: by default the rate limit is 1h for identical messages")
 }
