@@ -38,7 +38,11 @@ func main() {
 	}
 
 	log.AddHook(slackAlerter)
-	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST))
-	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST))
-	log.Warn("only one alert was sent: by default the rate limit is 1h for identical messages")
+
+	payload1 := map[string]any{"key1": "value1"}
+	payload2 := map[string]any{"key2": "value2"}
+
+	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST), payload1)
+	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST), payload2)
+	log.Warn("only one alert sent: default 1h rate limit for identical messages, even with different payloads")
 }

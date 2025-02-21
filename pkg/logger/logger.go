@@ -45,7 +45,7 @@ type Logger interface {
 	Panic(message string, args ...any)
 
 	// Alert the message to connected hooks.
-	Alert(ctx context.Context, message string, options alerter.Options)
+	Alert(ctx context.Context, message string, options alerter.Options, payload map[string]any)
 }
 
 // ZerologLogger is an implementation of Logger interface using zerolog package.
@@ -111,9 +111,10 @@ func (l *ZerologLogger) Panic(message string, args ...any) {
 }
 
 // Alert the message to connected hooks.
-func (l *ZerologLogger) Alert(ctx context.Context, message string, options alerter.Options) {
+func (l *ZerologLogger) Alert(ctx context.Context, message string, options alerter.Options, payload map[string]any) {
 	event := alerter.Event{
 		Message: message,
+		Payload: payload,
 		Options: options,
 	}
 

@@ -3,6 +3,7 @@ package slack
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -59,7 +60,15 @@ func (a *Alerter) Alert(ctx context.Context, event alerter.Event) error {
 		return fmt.Errorf(`env SLACK_%s not defined: %w`, event.Options.ChannelSuffix, errChannelNotFound)
 	}
 
-	_, _, err = a.client.PostMessageContext(ctx, channel, slack.MsgOptionText(event.Message, false))
+	payloadBytes, err := json.Marshal(event.Payload)
+	if err != nil {
+		return fmt.Errorf("alerter payload marshal: %w", err)
+	}
+
+	payloadString := string(payloadBytes)
+	msg := event.Message + "\n" + payloadString
+
+	_, _, err = a.client.PostMessageContext(ctx, channel, slack.MsgOptionText(msg, false))
 	if err != nil {
 		a.msgByTS.Remove(hashed) // retry next time
 

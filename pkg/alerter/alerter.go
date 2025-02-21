@@ -16,6 +16,7 @@ type Alerter interface {
 // Event info for processing an alert.
 type Event struct {
 	Message string
+	Payload map[string]any
 	Options Options
 }
 
