@@ -13,17 +13,16 @@ func main() {
 	ctx, cancel, log := bootstrap.Default()
 	defer cancel()
 
-	logexample.Run(log)
-
 	var wg sync.WaitGroup
 
-	wg.Add(2)
+	wg.Add(1)
+	wg.Add(1)
 
 	go func() {
 		defer wg.Done()
+		logexample.Run(log)
 		alertexample.Run(ctx, log)
 	}()
-
 	go func() {
 		defer wg.Done()
 		log.Info("emulating an ongoing background process; press ctrl+c to shutdown gracefully")
