@@ -2,7 +2,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -10,20 +9,14 @@ import (
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/channels"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/slack"
-	"github.com/Sengoku11/go-monorepo/pkg/loadenv"
-	"github.com/Sengoku11/go-monorepo/pkg/logger"
+	"github.com/Sengoku11/go-monorepo/pkg/bootstrap"
 )
 
 var errTest = errors.New("this is an error")
 
 func main() {
-	ctx := context.Background()
-
-	if err := loadenv.Local(); err != nil {
-		panic("cannot start locally: " + err.Error())
-	}
-
-	var log logger.Logger = logger.NewZerologLogger()
+	ctx, cancel, log := bootstrap.Default()
+	defer cancel()
 
 	log.Info("starting app")
 	log.Debug("this message appears when env DEBUG is true", "debug", os.Getenv("DEBUG"))

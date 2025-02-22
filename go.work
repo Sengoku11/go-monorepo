@@ -3,6 +3,7 @@ go 1.24.0
 use (
 	./apps/example
 	./pkg/alerter
+	./pkg/bootstrap
 	./pkg/loadenv
 	./pkg/logger
 )
