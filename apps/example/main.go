@@ -2,40 +2,34 @@
 package main
 
 import (
-	"errors"
-	"fmt"
-	"os"
+	"sync"
 
-	"github.com/Sengoku11/go-monorepo/pkg/alerter"
-	"github.com/Sengoku11/go-monorepo/pkg/alerter/channels"
-	"github.com/Sengoku11/go-monorepo/pkg/alerter/slack"
+	"github.com/Sengoku11/go-monorepo/apps/example/alertexample"
+	"github.com/Sengoku11/go-monorepo/apps/example/logexample"
 	"github.com/Sengoku11/go-monorepo/pkg/bootstrap"
 )
-
-var errTest = errors.New("this is an error")
 
 func main() {
 	ctx, cancel, log := bootstrap.Default()
 	defer cancel()
 
-	log.Info("starting app")
-	log.Debug("this message appears when env DEBUG is true", "debug", os.Getenv("DEBUG"))
+	logexample.Run(log)
 
-	err2 := fmt.Errorf("error2 says hello: %w", errTest)
-	err3 := fmt.Errorf("error3 wraps everything up: %w", err2)
-	log.Error("intentionally failed", "error", err3)
+	var wg sync.WaitGroup
 
-	slackAlerter, err := slack.New()
-	if err != nil {
-		log.Panic("cannot create slack alerter", "error", err)
-	}
+	wg.Add(2)
 
-	log.AddHook(slackAlerter)
+	go func() {
+		defer wg.Done()
+		alertexample.Run(ctx, log)
+	}()
 
-	payload1 := map[string]any{"key1": "value1"}
-	payload2 := map[string]any{"key2": "value2"}
+	go func() {
+		defer wg.Done()
+		log.Info("emulating an ongoing background process; press ctrl+c to shutdown gracefully")
+		<-ctx.Done()
+	}()
 
-	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST), payload1)
-	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST), payload2)
-	log.Warn("only one alert sent: default 1h rate limit for identical messages, even with different payloads")
+	wg.Wait()
+	log.Info("terminating app")
 }
