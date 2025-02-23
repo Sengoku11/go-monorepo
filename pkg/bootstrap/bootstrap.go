@@ -15,14 +15,17 @@ import (
 // in a local environment.
 //
 //nolint:ireturn
-func Default() (context.Context, context.CancelFunc, logger.Logger) {
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+func Default() (context.Context, context.CancelCauseFunc, logger.Logger) {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	if err := loadenv.Local(); err != nil {
+		stop()
 		panic("cannot start locally: " + err.Error())
 	}
 
 	log := logger.NewZerologLogger()
 
-	return ctx, cancel, log
+	ctxWithCause, cancelCause := context.WithCancelCause(ctx)
+
+	return ctxWithCause, cancelCause, log
 }
