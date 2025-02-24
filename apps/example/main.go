@@ -2,19 +2,16 @@
 package main
 
 import (
-	"errors"
 	"sync"
 
-	"github.com/Sengoku11/go-monorepo/apps/example/alertexample"
-	"github.com/Sengoku11/go-monorepo/apps/example/logexample"
+	"github.com/Sengoku11/go-monorepo/apps/example/internal/alertexample"
+	"github.com/Sengoku11/go-monorepo/apps/example/internal/logexample"
 	"github.com/Sengoku11/go-monorepo/pkg/bootstrap"
 )
 
-var errUnexpectedExit = errors.New("unexpected exit")
-
 func main() {
 	ctx, cancel, log := bootstrap.Default()
-	defer cancel(errUnexpectedExit)
+	defer cancel(nil)
 
 	var wg sync.WaitGroup
 
