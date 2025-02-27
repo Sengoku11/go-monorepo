@@ -24,8 +24,9 @@ func Default() (context.Context, context.CancelCauseFunc, logger.Logger) {
 	}
 
 	log := logger.NewZerologLogger()
-
 	ctxWithCause, cancelCause := context.WithCancelCause(ctx)
+
+	log.Info("starting the application")
 
 	return ctxWithCause, cancelCause, log
 }
