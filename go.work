@@ -6,4 +6,5 @@ use (
 	./pkg/bootstrap
 	./pkg/loadenv
 	./pkg/logger
+	./pkg/middleware
 )
