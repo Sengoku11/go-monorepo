@@ -1,0 +1,13 @@
+with-expecter: true
+resolve-type-alias: false
+issue-845-fix: true
+packages:
+  github.com/Sengoku11/go-monorepo/pkg/logger:
+    config:
+      all: true
+  github.com/Sengoku11/go-monorepo/pkg/alerter:
+    config:
+      all: true
+  github.com/Sengoku11/go-monorepo/pkg/middleware:
+    config:
+      all: true

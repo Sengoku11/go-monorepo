@@ -9,6 +9,7 @@ tidy:
 		echo "Lint fixing in $$dir..."; \
 		( cd $$dir && golangci-lint run --fix ) || true; \
 	done
+	$(shell go env GOPATH)/bin/mockery
 
 lint:
 	@for dir in $(shell find apps -mindepth 1 -maxdepth 1 -type d) $(shell find pkg -mindepth 1 -maxdepth 1 -type d); do \

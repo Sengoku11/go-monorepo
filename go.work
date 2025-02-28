@@ -3,6 +3,7 @@ go 1.24.0
 use (
 	./apps/example
 	./apps/server
+	./mocks
 	./pkg/alerter
 	./pkg/bootstrap
 	./pkg/loadenv
