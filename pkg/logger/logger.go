@@ -56,8 +56,6 @@ type ZerologLogger struct {
 }
 
 // NewZerologLogger creates a new instance of ZerologLogger.
-//
-//go:generate mockery --config ../../.mockery.yaml
 func NewZerologLogger() *ZerologLogger {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
