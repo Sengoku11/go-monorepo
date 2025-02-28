@@ -17,4 +17,6 @@ lint:
 		( cd $$dir && go vet ) || exit $$?; \
 		echo "Running golangci-lint in $$dir..."; \
 		(cd $$dir && golangci-lint run) || exit $$?; \
+		echo "Run tests in $$dir..."; \
+		( cd $$dir && go test ) || exit; \
 	done

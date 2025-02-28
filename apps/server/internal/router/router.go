@@ -15,8 +15,8 @@ func New(log logger.Logger) *chi.Mux {
 	mux := chi.NewRouter()
 
 	mux.Use(chimware.RequestID)
-	mux.Use(chimware.Recoverer)
 	mux.Use(middleware.LogRequest(log))
+	mux.Use(chimware.Recoverer)
 
 	mux.HandleFunc("/hello", func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write([]byte("Hello World"))

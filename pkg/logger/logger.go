@@ -67,7 +67,7 @@ func NewZerologLogger() *ZerologLogger {
 	// Set debug mode on if enabled
 	debug, err := strconv.ParseBool(os.Getenv("DEBUG"))
 	if err != nil {
-		logger.Error().Msg("DEBUG environment variable is not set, defaulting to false")
+		logger.Warn().Msg("DEBUG environment variable is not set, defaulting to false")
 	} else if debug {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
