@@ -30,3 +30,4 @@ linters-settings:
       - wg sync.WaitGroup
       - r *http.Request
       - w http.ResponseWriter
+      - i int

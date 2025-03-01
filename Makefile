@@ -1,4 +1,4 @@
-.PHONY: tidy lint
+.PHONY: tidy lint test
 
 tidy:
 	@for dir in $(shell find apps -mindepth 1 -maxdepth 1 -type d) $(shell find pkg -mindepth 1 -maxdepth 1 -type d); do \
@@ -18,5 +18,11 @@ lint:
 		echo "Running golangci-lint in $$dir..."; \
 		(cd $$dir && golangci-lint run) || exit $$?; \
 		echo "Run tests in $$dir..."; \
-		( cd $$dir && go test ) || exit; \
+		( cd $$dir && go test -race ./...) || exit; \
+	done
+
+test:
+	@for dir in $(shell find apps -mindepth 1 -maxdepth 1 -type d) $(shell find pkg -mindepth 1 -maxdepth 1 -type d); do \
+		echo "Run tests in $$dir..."; \
+		( cd $$dir && go test -race ./...) || exit; \
 	done
