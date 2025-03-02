@@ -10,7 +10,7 @@ A `go.work` template with prebuilt instruments.
 * Alerter hooks with Slack implementation and per-message rate limiting.
 * Custom middlewares.
 * Mock config to generate mocks for all packages.
-* Error codes with auto-generation tools.
+* Auto-generated documentation for all error codes.
 
 ### Requirements
 ```bash
