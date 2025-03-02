@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/ratelim"
 )
@@ -16,6 +17,69 @@ func ExampleHash() {
 
 	// Output:
 	// 8654963907013259302, <nil>
+}
+
+func ExampleMessageByTS_Add() {
+	mbt := ratelim.NewMap()
+	hash, _ := ratelim.Hash("Hello world!")
+	now := ratelim.TimeNow()
+
+	mbt.Add(hash, now)
+
+	ts, exist := mbt.Get(hash)
+	fmt.Printf("%t, %t\n", ts == now, exist)
+	// Output:
+	// true, true
+}
+
+func ExampleMessageByTS_Get() {
+	mbt := ratelim.NewMap()
+	hash, _ := ratelim.Hash("Hello world!")
+
+	mbt.Add(hash, 1740925588000)
+
+	ts, exist := mbt.Get(hash)
+	fmt.Printf("%d, %t\n", ts, exist)
+	// Output:
+	// 1740925588000, true
+}
+
+func ExampleMessageByTS_AddNow() {
+	mbt := ratelim.NewMap()
+	hash, _ := ratelim.Hash("Hello world!")
+
+	mbt.AddNow(hash)
+
+	ts, exist := mbt.Get(hash)
+	fmt.Printf("%t, %t\n", time.Now().UnixMilli() >= ts, exist)
+	// Output:
+	// true, true
+}
+
+func ExampleMessageByTS_Remove() {
+	mbt := ratelim.NewMap()
+	hash, _ := ratelim.Hash("Hello world!")
+
+	mbt.AddNow(hash)
+	mbt.Remove(hash)
+
+	ts, exist := mbt.Get(hash)
+	fmt.Printf("%d, %t\n", ts, exist)
+	// Output:
+	// 0, false
+}
+
+func ExampleIsPastDue() {
+	now := ratelim.TimeNow()
+	duration := time.Millisecond
+
+	before := ratelim.IsPastDue(now, duration)
+	time.Sleep(duration)
+	after := ratelim.IsPastDue(now, duration)
+
+	fmt.Printf("%t, %t", before, after)
+	// Output:
+	// false, true
 }
 
 func TestHash(t *testing.T) {
