@@ -50,7 +50,6 @@ func getAllErrors(codeToName map[int]string) http.HandlerFunc {
 	}
 }
 
-// @Router       /errors/{code} [get].
 func getErrorByCode(codeToName map[int]string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		codeParam := chi.URLParam(r, "code")
@@ -58,11 +57,15 @@ func getErrorByCode(codeToName map[int]string) http.HandlerFunc {
 		code, err := strconv.Atoi(codeParam)
 		if err != nil {
 			http.Error(w, "invalid code", http.StatusBadRequest)
+
+			return
 		}
 
 		name, exist := codeToName[code]
 		if !exist {
 			http.Error(w, fmt.Sprintf("code %d not found", code), http.StatusNotFound)
+
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
