@@ -3,9 +3,11 @@ go 1.24.0
 use (
 	./apps/example
 	./apps/server
+	./cmd/generrors
 	./mocks
 	./pkg/alerter
 	./pkg/bootstrap
+	./pkg/errcode
 	./pkg/loadenv
 	./pkg/logger
 	./pkg/middleware

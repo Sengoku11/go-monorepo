@@ -8,6 +8,8 @@ tidy:
 		( cd $$dir && go fmt ) || exit $$?; \
 		echo "Lint fixing in $$dir..."; \
 		( cd $$dir && golangci-lint run --fix ) || true; \
+		echo "Generating code in $$dir..."; \
+		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH go generate ./... ) || true; \
 	done
 	$(shell go env GOPATH)/bin/mockery
 
