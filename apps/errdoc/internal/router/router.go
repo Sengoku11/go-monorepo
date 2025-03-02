@@ -23,7 +23,7 @@ func New(log logger.Logger) *chi.Mux {
 	mux.Use(middleware.LogRequest(log))
 
 	mux.Get("/errors", getAllErrors(codeToName))
-	mux.Get("/errors/{code}", getErrorByCode(codeToName))
+	mux.Get("/errors/{code}", getNameByCode(codeToName))
 
 	return mux
 }
@@ -50,7 +50,11 @@ func getAllErrors(codeToName map[int]string) http.HandlerFunc {
 	}
 }
 
-func getErrorByCode(codeToName map[int]string) http.HandlerFunc {
+type nameResponse struct {
+	Name string `json:"name"`
+}
+
+func getNameByCode(codeToName map[int]string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		codeParam := chi.URLParam(r, "code")
 
@@ -69,6 +73,8 @@ func getErrorByCode(codeToName map[int]string) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]string{"name": name})
+
+		resp := nameResponse{Name: name}
+		_ = json.NewEncoder(w).Encode(resp)
 	}
 }
