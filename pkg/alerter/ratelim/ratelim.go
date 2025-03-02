@@ -80,7 +80,5 @@ func TimeNow() int64 {
 
 // IsPastDue determines whether the provided UnixMilli timestamp is older than the specified duration.
 func IsPastDue(timestamp int64, duration time.Duration) bool {
-	ms := duration.Milliseconds()
-
-	return time.Now().UnixMilli()-timestamp > ms
+	return time.Since(time.UnixMilli(timestamp)) > duration
 }
