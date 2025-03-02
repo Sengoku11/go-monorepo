@@ -8,6 +8,16 @@ import (
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/ratelim"
 )
 
+// Hash is deterministic, it will consistently produce the same hash value for the same input string.
+func ExampleHash() {
+	hash, err := ratelim.Hash("Hello 42 world!")
+
+	fmt.Printf("%d, %v\n", hash, err)
+
+	// Output:
+	// 8654963907013259302, <nil>
+}
+
 func TestHash(t *testing.T) {
 	t.Parallel()
 
