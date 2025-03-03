@@ -1,23 +1,33 @@
 # Go Monorepo 
 
-A `go.work` template with prebuilt instruments.
+This repository centralizes documentation and streamlines changes across client and server codebases,
+showcasing the inherent benefits of a monorepo structure—such as the ability
+to perform atomic commits—to ensure consistency and ease of management.
 
+By leveraging `go.work`, imports are simplified, and integration with private repositories is seamless.
 
 ### Features
 * Automatic .env loader for local development.
-* Recursive `make tidy` and `make lint`.
+* Recursive make commands, like `make tidy` and `make lint`.
 * Wrapped [zerolog](https://github.com/rs/zerolog) logger.
 * Alerter hooks with Slack implementation and per-message rate limiting.
 * Custom middlewares.
-* Mock config to generate mocks for all packages.
+* Auto-generated mocks via `.mockery.yaml` config.
 * Auto-generated documentation for all error codes.
+
+### Running the Documentation Server
+```bash
+pkgsite -http :8080
+```
 
 ### Requirements
 ```bash
 # mockery
 go install github.com/vektra/mockery/v2@v2.52.4
-```
-```bash
+
 # stringer
 go install golang.org/x/tools/cmd/stringer@v0.30.0
+
+# documentation
+go install golang.org/x/pkgsite/cmd/pkgsite@latest
 ```
