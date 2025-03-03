@@ -14,10 +14,10 @@ A `go.work` template with prebuilt instruments.
 
 ### Requirements
 ```bash
-# mockery:
+# mockery
 go install github.com/vektra/mockery/v2@v2.52.4
 ```
 ```bash
-#stringer
+# stringer
 go install golang.org/x/tools/cmd/stringer@v0.30.0
 ```

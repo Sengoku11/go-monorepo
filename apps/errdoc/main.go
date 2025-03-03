@@ -1,4 +1,5 @@
-// Provides a documentation that exposes errcode.AllCodes to third-parties, who don't have access to the monorepo.
+// Leveraging the monorepo's full capabilities, this server exposes the complete set of error codes
+// defined in errcode.AllCodes, essential for third-party consumers to integrate and debug effectively.
 package main
 
 import (
