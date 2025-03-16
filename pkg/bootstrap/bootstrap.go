@@ -3,7 +3,9 @@ package bootstrap
 
 import (
 	"context"
+	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/Sengoku11/go-monorepo/pkg/loadenv"
@@ -25,6 +27,13 @@ func Default() (context.Context, context.CancelCauseFunc, logger.Logger) {
 
 	log := logger.NewZerologLogger()
 	ctxWithCause, cancelCause := context.WithCancelCause(ctx)
+
+	// Set debug mode on if enabled
+	if debug, err := strconv.ParseBool(os.Getenv("DEBUG")); err != nil {
+		log.Warn("DEBUG environment variable is not set, defaulting to false")
+	} else if debug {
+		log.EnableDebugMode()
+	}
 
 	log.Info("starting the application")
 

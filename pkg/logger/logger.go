@@ -6,8 +6,6 @@ package logger
 import (
 	"context"
 	"errors"
-	"os"
-	"strconv"
 	"sync"
 	"time"
 
@@ -16,6 +14,12 @@ import (
 )
 
 const alertTimeout = time.Second * 2
+
+// Error that is logged at the error level when the alert hook fails.
+var (
+	ErrSendAlert   = errors.New("failed to send alert")
+	ErrSendTimeout = errors.New("failed to send in time")
+)
 
 // Logger defines the minimal logging interface. It can be extended with more methods as needed.
 type Logger interface {
@@ -46,6 +50,12 @@ type Logger interface {
 
 	// Alert the message to connected hooks.
 	Alert(ctx context.Context, message string, options alerter.Options, payload map[string]any)
+
+	// EnableDebugMode to log debug messages.
+	EnableDebugMode()
+
+	// DisableDebugMode to avoid spamming debug messages.
+	DisableDebugMode()
 }
 
 // ZerologLogger is an implementation of Logger interface using zerolog package.
@@ -53,26 +63,30 @@ type Logger interface {
 type ZerologLogger struct {
 	logger *zerolog.Logger
 	hooks  []alerter.Alerter
+	debug  bool
 }
 
 // NewZerologLogger creates a new instance of ZerologLogger.
 func NewZerologLogger() *ZerologLogger {
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-
-	// Configure zerolog logger
 	consoleWriter := zerolog.NewConsoleWriter()
 	consoleWriter.TimeFormat = time.DateTime
 	logger := zerolog.New(consoleWriter).With().Timestamp().Logger()
 
-	// Set debug mode on if enabled
-	debug, err := strconv.ParseBool(os.Getenv("DEBUG"))
-	if err != nil {
-		logger.Warn().Msg("DEBUG environment variable is not set, defaulting to false")
-	} else if debug {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	return &ZerologLogger{
+		logger: &logger,
+		debug:  false,
+		hooks:  []alerter.Alerter{},
 	}
+}
 
-	return &ZerologLogger{logger: &logger, hooks: make([]alerter.Alerter, 0)}
+// EnableDebugMode to log debug messages.
+func (l *ZerologLogger) EnableDebugMode() {
+	l.debug = true
+}
+
+// DisableDebugMode to avoid spamming debug messages.
+func (l *ZerologLogger) DisableDebugMode() {
+	l.debug = false
 }
 
 // AddHook for sending alerts to messengers.
@@ -87,6 +101,10 @@ func (l *ZerologLogger) Info(message string, args ...any) {
 
 // Debug logs a message at the info level if env DEBUG is set to true.
 func (l *ZerologLogger) Debug(message string, args ...any) {
+	if !l.debug {
+		return
+	}
+
 	l.logger.Debug().Fields(args).Msg(message)
 }
 
@@ -130,9 +148,19 @@ func (l *ZerologLogger) Alert(ctx context.Context, message string, options alert
 
 			err := h.Alert(timeoutCtx, event)
 			if errors.Is(err, context.DeadlineExceeded) {
-				l.logger.Error().Msgf("hook timed out")
+				l.Error(
+					ErrSendTimeout.Error(),
+					"error", context.DeadlineExceeded.Error(),
+					"channel", options.ChannelSuffix,
+					"msg", message,
+				)
 			} else if err != nil {
-				l.logger.Err(err).Msgf(`failed to send %s alert`, options.ChannelSuffix)
+				l.Error(
+					ErrSendAlert.Error(),
+					"error", err.Error(),
+					"channel", options.ChannelSuffix,
+					"msg", message,
+				)
 			}
 		}(hook)
 	}
