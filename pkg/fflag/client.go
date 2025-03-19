@@ -17,6 +17,17 @@ type Client struct {
 	log logger.Logger
 }
 
+// New instance of a Client. The namespace parameter is a unique identifier for this client.
+func New(namespace string, provider openfeature.FeatureProvider, log logger.Logger) (*Client, error) {
+	if err := openfeature.SetProviderAndWait(provider); err != nil {
+		return nil, fmt.Errorf("failed to initialize provider: %w", err)
+	}
+
+	client := openfeature.NewClient(namespace)
+
+	return &Client{client, log}, nil
+}
+
 // BooleanFlag holds the parameters for polling a boolean flag.
 type BooleanFlag struct {
 	Name         string
@@ -27,7 +38,7 @@ type BooleanFlag struct {
 
 // WatchBoolFlag continuously polls a boolean flag and runs the callback when its value changes.
 // Not all providers in OpenFeature support event subscription on flag change.
-func (c *Client) WatchBoolFlag(ctx context.Context, ticker *time.Ticker, flag BooleanFlag, callback func(bool)) {
+func (c *Client) WatchBoolFlag(ctx context.Context, flag BooleanFlag, ticker *time.Ticker, callback func(bool)) {
 	defer ticker.Stop()
 
 	currentVal, err := c.fetchBooleanValue(ctx, flag)

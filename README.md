@@ -7,7 +7,7 @@ to perform atomic commits—to ensure consistency and ease of management.
 By leveraging `go.work`, imports are simplified, and integration with private repositories is seamless.
 
 ### Features
-* Automatic `.env` loader for local development, plus recursive Make commands like `make tidy` and `make lint`.
+* Automatic `.env` loader for local development, plus recursive commands like `make tidy` and `make lint`.
 * Wrapped [Zerolog](https://github.com/rs/zerolog) logger
 * Alerter hooks with [Slack](https://github.com/slack-go/slack) and per-message rate limiting.
 * Custom middlewares.
