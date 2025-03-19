@@ -22,12 +22,18 @@ if [ -z "$REPO_ROOT" ]; then
     exit 1
 fi
 
-# Load .env file from the repo root and extract FEATURE_TOGGLE_PORT
+# Load .env file from the repo root and extract FEATURE_TOGGLE_PORT and FEATURE_TOGGLE_GRPC_PORT
 ENV_FILE="$REPO_ROOT/.env"
 if [ -f "$ENV_FILE" ]; then
     FEATURE_TOGGLE_PORT=$(grep '^FEATURE_TOGGLE_PORT=' "$ENV_FILE" | cut -d '=' -f2)
     if [ -z "$FEATURE_TOGGLE_PORT" ]; then
         echo "Error: FEATURE_TOGGLE_PORT is not set in $ENV_FILE"
+        exit 1
+    fi
+
+    FEATURE_TOGGLE_GRPC_PORT=$(grep '^FEATURE_TOGGLE_GRPC_PORT=' "$ENV_FILE" | cut -d '=' -f2)
+    if [ -z "$FEATURE_TOGGLE_GRPC_PORT" ]; then
+        echo "Error: FEATURE_TOGGLE_GRPC_PORT is not set in $ENV_FILE"
         exit 1
     fi
 else
@@ -41,10 +47,10 @@ if [ "$(docker ps -aq -f name=^flipt$)" ]; then
     docker stop flipt && docker rm flipt
 fi
 
-# Run docker command mapping host port from FEATURE_TOGGLE_PORT to container port 9000, with container name "flipt"
+# Run docker command mapping the ports from .env, with container name "flipt"
 docker run -d \
     --name flipt \
-    -p 8073:8080 \
-    -p "${FEATURE_TOGGLE_PORT}:9000" \
+    -p "${FEATURE_TOGGLE_PORT}:8080" \
+    -p "${FEATURE_TOGGLE_GRPC_PORT}:9000" \
     -v "$HOME/flipt:/var/opt/flipt" \
     docker.flipt.io/flipt/flipt:latest

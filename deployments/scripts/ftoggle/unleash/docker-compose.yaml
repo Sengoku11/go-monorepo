@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ${FEATURE_TOGGLE_DATABASE_NAME}
+      POSTGRES_PASSWORD: ${FEATURE_TOGGLE_DATABASE_PASSWORD}
+      POSTGRES_USER: ${FEATURE_TOGGLE_DATABASE_USERNAME}
+    networks:
+      - unleash
+
+  unleash:
+    image: unleashorg/unleash-server:latest
+    container_name: unleash-server
+    ports:
+      - "${FEATURE_TOGGLE_PORT}:4242"
+    environment:
+      DATABASE_HOST: ${FEATURE_TOGGLE_DATABASE_HOST}
+      DATABASE_NAME: ${FEATURE_TOGGLE_DATABASE_NAME}
+      DATABASE_USERNAME: ${FEATURE_TOGGLE_DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${FEATURE_TOGGLE_DATABASE_PASSWORD}
+      DATABASE_SSL: "false"
+      INIT_FRONTEND_API_TOKENS: ${FEATURE_TOGGLE_INIT_FRONTEND_API_TOKENS}
+      INIT_CLIENT_API_TOKENS: ${FEATURE_TOGGLE_INIT_CLIENT_API_TOKENS}
+    depends_on:
+      - postgres
+    networks:
+      - unleash
+
+networks:
+  unleash:
+#    external: true
