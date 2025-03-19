@@ -2,7 +2,7 @@ go 1.24.0
 
 use (
 	./apps/errdoc
-	./apps/example
+	./apps/examples
 	./cmd/generrors
 	./mocks
 	./pkg/alerter
