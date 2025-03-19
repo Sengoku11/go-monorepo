@@ -8,6 +8,7 @@ use (
 	./pkg/alerter
 	./pkg/bootstrap
 	./pkg/errcode
+	./pkg/fflag
 	./pkg/loadenv
 	./pkg/logger
 	./pkg/middleware
