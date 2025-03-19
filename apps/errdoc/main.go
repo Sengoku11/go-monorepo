@@ -29,12 +29,10 @@ func main() {
 		port = "3003"
 	}
 
-	mux := router.New(log)
-
 	//nolint:mnd,exhaustruct
 	srv := http.Server{
+		Handler:           router.New(log),
 		Addr:              fmt.Sprintf("%s:%s", host, port),
-		Handler:           mux,
 		ReadTimeout:       5 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,
 		WriteTimeout:      5 * time.Second,
