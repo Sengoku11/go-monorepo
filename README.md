@@ -7,12 +7,12 @@ to perform atomic commits—to ensure consistency and ease of management.
 By leveraging `go.work`, imports are simplified, and integration with private repositories is seamless.
 
 ### Features
-* Automatic .env loader for local development.
-* Recursive make commands, like `make tidy` and `make lint`.
-* Wrapped [zerolog](https://github.com/rs/zerolog) logger.
-* Alerter hooks with Slack implementation and per-message rate limiting.
+* Automatic `.env` loader for local development, plus recursive Make commands like `make tidy` and `make lint`.
+* Wrapped [Zerolog](https://github.com/rs/zerolog) logger
+* Alerter hooks with [Slack](https://github.com/slack-go/slack) and per-message rate limiting.
 * Custom middlewares.
-* Auto-generated mocks via `.mockery.yaml` config.
+* Feature flags via [OpenFeature](https://github.com/open-feature/go-sdk) and [Flipt](https://www.flipt.io/). 
+* Auto-generated mocks via `.mockery.yaml`.
 * Auto-generated documentation for all error codes.
 
 ### Running the Documentation Server

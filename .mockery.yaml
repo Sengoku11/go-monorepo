@@ -11,3 +11,6 @@ packages:
   github.com/Sengoku11/go-monorepo/pkg/middleware:
     config:
       all: true
+  github.com/Sengoku11/go-monorepo/pkg/fflag:
+    config:
+      all: true
