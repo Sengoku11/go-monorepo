@@ -17,7 +17,9 @@ type Client struct {
 	log logger.Logger
 }
 
-// New instance of a Client. The namespace parameter is a unique identifier for this client.
+// New creates and returns a Client instance using a unique identifier for this client (namespace).
+//
+// For OpenFeature-compatible providers see https://github.com/open-feature/go-sdk-contrib/tree/main/providers.
 func New(namespace string, provider openfeature.FeatureProvider, log logger.Logger) (*Client, error) {
 	if err := openfeature.SetProviderAndWait(provider); err != nil {
 		return nil, fmt.Errorf("failed to initialize provider: %w", err)
@@ -38,6 +40,8 @@ type BooleanFlag struct {
 
 // WatchBoolFlag continuously polls a boolean flag and runs the callback when its value changes.
 // Not all providers in OpenFeature support event subscription on flag change.
+//
+// Helpful if you want to implement a kill-switch.
 func (c *Client) WatchBoolFlag(ctx context.Context, flag BooleanFlag, ticker *time.Ticker, callback func(bool)) {
 	defer ticker.Stop()
 
