@@ -33,7 +33,7 @@ var errPathNotFound = errors.New("runtime.Caller(0) failed")
 //   - BitBucket
 //   - AzBlobStorage
 //   - Flipt, Unleash, and other cloud providers.
-func NewClient(ctx context.Context, log logger.Logger) (*fflag.Client, error) {
+func NewClient(ctx context.Context, log logger.Logger, environment string) (*fflag.Client, error) {
 	_, currentFilePath, _, ok := runtime.Caller(0)
 	if !ok {
 		return nil, errPathNotFound
@@ -47,6 +47,7 @@ func NewClient(ctx context.Context, log logger.Logger) (*fflag.Client, error) {
 		GOFeatureFlagConfig: &ffclient.Config{
 			PollingInterval: 100 * time.Millisecond,
 			Context:         ctx,
+			Environment:     environment,
 			Retriever: &fileretriever.Retriever{
 				Path: absPath,
 			},

@@ -1,0 +1,21 @@
+new_feature:
+  variations:
+    enabled: true
+    disabled: false
+  targeting: # works as switch-case-default, breaking on the first matched condition
+    # you can add more users
+    - name: admin user
+      query: targetingKey eq "admin"
+      variation: enabled
+
+    # try to change ENVIRONMENT in the .env file to prod or uat
+    - name: prod environment
+      query: env eq "prod"
+      percentage:
+        enabled: 50
+        disabled: 50
+    - name: uat environment
+      query: env eq "uat"
+      variation: enabled
+  defaultRule: # default if none of the targeting conditions match
+    variation: disabled
