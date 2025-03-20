@@ -272,6 +272,7 @@ func TestZerologLogger_DisableDebugMode(t *testing.T) {
 	}
 }
 
+//nolint:paralleltest,tparallel
 func TestZerologLogger_WithRateLim(t *testing.T) {
 	t.Parallel()
 
@@ -305,7 +306,6 @@ func TestZerologLogger_WithRateLim(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			t.Parallel()
 			buf.Reset()
 
 			for range runs {
