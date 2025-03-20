@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
-	"github.com/Sengoku11/go-monorepo/pkg/alerter/ratelim"
+	"github.com/Sengoku11/go-monorepo/pkg/logger/ratelim"
 	"github.com/slack-go/slack"
 )
 

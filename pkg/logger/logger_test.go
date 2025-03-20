@@ -263,15 +263,68 @@ func TestZerologLogger_DisableDebugMode(t *testing.T) {
 
 	log, buf := newTestLogger()
 
-	message := "Hello World"
-	key1, key2, key3 := "hello_1", "hello_2", "hello_3"
-	val1, val2, val3 := "world_1", "world_2", "world_3"
-
 	log.EnableDebugMode()
 	log.DisableDebugMode()
-	log.Debug(message, key1, val1, key2, val2, key3, val3)
+	log.Debug(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
 
 	if out := buf.String(); len(out) > 0 {
 		t.Errorf("Expected empty buffer but got %q", out)
+	}
+}
+
+func TestZerologLogger_WithRateLim(t *testing.T) {
+	t.Parallel()
+
+	log, buf := newTestLogger()
+
+	expectedSubstrings := []string{
+		`"level":"info"`,
+		fmt.Sprintf(`"message":"%s"`, testMessage),
+		fmt.Sprintf(`"%s":"%s"`, testKey1, testVal1),
+		fmt.Sprintf(`"%s":"%s"`, testKey2, testVal2),
+		fmt.Sprintf(`"%s":"%s"`, testKey3, testVal3),
+	}
+
+	runs := 10
+	testCases := []struct {
+		name         string
+		infoFunc     LogMethod
+		expectedLogs int
+	}{
+		{
+			name:         "without rate limit",
+			infoFunc:     log.Info,
+			expectedLogs: runs,
+		},
+		{
+			name:         "with rate limit",
+			infoFunc:     log.WithRateLim(time.Minute, log.Info),
+			expectedLogs: 1,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			buf.Reset()
+
+			for range runs {
+				testCase.infoFunc(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
+			}
+
+			out := buf.String()
+			for _, substring := range expectedSubstrings {
+				if !strings.Contains(out, substring) {
+					t.Errorf(`expected log output to contain %s, got %q`, substring, out)
+				}
+			}
+
+			logEntries := strings.Split(strings.TrimSpace(out), "\n")
+
+			logCount := len(logEntries)
+			if logCount != testCase.expectedLogs {
+				t.Errorf("expected %d logs, but printed: %d\n", testCase.expectedLogs, logCount)
+			}
+		})
 	}
 }
