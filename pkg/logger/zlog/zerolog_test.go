@@ -298,18 +298,25 @@ func TestZerologLogger_WithRateLim(t *testing.T) {
 
 	log, buf := newTestLogger()
 	runs := 10
+	expectedLogs := runs + 1
 
 	info := log.WithRateLim(time.Minute, log.Info)
+	// Should log just once.
 	for range runs {
 		info(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
 	}
 
+	// Run without rate lim as well, to check that there is no interfering.
+	for range runs {
+		log.Info(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
+	}
+
 	out := buf.String()
 
-	// Even though we attempted to log 10 times, the rate limiter should only allow one log.
+	// Even though we logged 2x10 times, the second loop should only allow one log.
 	logEntries := strings.Split(strings.TrimSpace(out), "\n")
-	if len(logEntries) != 1 {
-		t.Errorf("expected 1 log, but got %d", len(logEntries))
+	if len(logEntries) != expectedLogs {
+		t.Errorf("expected %d log, but got %d", expectedLogs, len(logEntries))
 	}
 }
 

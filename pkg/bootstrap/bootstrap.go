@@ -15,8 +15,6 @@ import (
 // Default creates a context that is canceled on SIGINT or SIGTERM, loads environment variables
 // if running locally, and returns a logger instance. It panics if environment loading fails
 // in a local environment.
-//
-
 func Default() (context.Context, context.CancelCauseFunc, *zlog.Logger) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
