@@ -60,9 +60,9 @@ func (_c *MockLogger_AddHook_Call) RunAndReturn(run func(alerter.Alerter)) *Mock
 	return _c
 }
 
-// Alert provides a mock function with given fields: ctx, message, options, payload
-func (_m *MockLogger) Alert(ctx context.Context, message string, options alerter.Options, payload map[string]any) {
-	_m.Called(ctx, message, options, payload)
+// Alert provides a mock function with given fields: ctx, channel, message, options, payload
+func (_m *MockLogger) Alert(ctx context.Context, channel alerter.Channel, message string, options alerter.Options, payload map[string]any) {
+	_m.Called(ctx, channel, message, options, payload)
 }
 
 // MockLogger_Alert_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Alert'
@@ -72,16 +72,17 @@ type MockLogger_Alert_Call struct {
 
 // Alert is a helper method to define mock.On call
 //   - ctx context.Context
+//   - channel alerter.Channel
 //   - message string
 //   - options alerter.Options
 //   - payload map[string]any
-func (_e *MockLogger_Expecter) Alert(ctx interface{}, message interface{}, options interface{}, payload interface{}) *MockLogger_Alert_Call {
-	return &MockLogger_Alert_Call{Call: _e.mock.On("Alert", ctx, message, options, payload)}
+func (_e *MockLogger_Expecter) Alert(ctx interface{}, channel interface{}, message interface{}, options interface{}, payload interface{}) *MockLogger_Alert_Call {
+	return &MockLogger_Alert_Call{Call: _e.mock.On("Alert", ctx, channel, message, options, payload)}
 }
 
-func (_c *MockLogger_Alert_Call) Run(run func(ctx context.Context, message string, options alerter.Options, payload map[string]any)) *MockLogger_Alert_Call {
+func (_c *MockLogger_Alert_Call) Run(run func(ctx context.Context, channel alerter.Channel, message string, options alerter.Options, payload map[string]any)) *MockLogger_Alert_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(alerter.Options), args[3].(map[string]any))
+		run(args[0].(context.Context), args[1].(alerter.Channel), args[2].(string), args[3].(alerter.Options), args[4].(map[string]any))
 	})
 	return _c
 }
@@ -91,7 +92,7 @@ func (_c *MockLogger_Alert_Call) Return() *MockLogger_Alert_Call {
 	return _c
 }
 
-func (_c *MockLogger_Alert_Call) RunAndReturn(run func(context.Context, string, alerter.Options, map[string]any)) *MockLogger_Alert_Call {
+func (_c *MockLogger_Alert_Call) RunAndReturn(run func(context.Context, alerter.Channel, string, alerter.Options, map[string]any)) *MockLogger_Alert_Call {
 	_c.Run(run)
 	return _c
 }

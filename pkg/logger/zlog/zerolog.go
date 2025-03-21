@@ -126,12 +126,14 @@ func (l *Logger) AddHook(hook alerter.Alerter) {
 }
 
 // Alert the message to connected hooks.
-func (l *Logger) Alert(ctx context.Context, message string, options alerter.Options, payload map[string]any) {
-	event := alerter.Event{
-		Message: message,
-		Payload: payload,
-		Options: options,
-	}
+func (l *Logger) Alert(
+	ctx context.Context,
+	channel alerter.Channel,
+	message string,
+	options alerter.Options,
+	payload map[string]any,
+) {
+	event := alerter.Event{Channel: channel, Message: message, Payload: payload, Options: options}
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, logger.AlertTimeout)
 	defer cancel()
@@ -145,19 +147,9 @@ func (l *Logger) Alert(ctx context.Context, message string, options alerter.Opti
 
 			err := h.Alert(timeoutCtx, event)
 			if errors.Is(err, context.DeadlineExceeded) {
-				l.Error(
-					logger.ErrSendTimeout.Error(),
-					"error", context.DeadlineExceeded.Error(),
-					"channel", options.ChannelSuffix,
-					"msg", message,
-				)
+				l.Error(logger.ErrSendTimeout.Error(), "error", err.Error(), "channel", channel, "msg", message)
 			} else if err != nil {
-				l.Error(
-					logger.ErrSendAlert.Error(),
-					"error", err.Error(),
-					"channel", options.ChannelSuffix,
-					"msg", message,
-				)
+				l.Error(logger.ErrSendAlert.Error(), "error", err.Error(), "channel", channel, "msg", message)
 			}
 		}(hook)
 	}

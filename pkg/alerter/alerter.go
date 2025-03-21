@@ -17,19 +17,20 @@ type Alerter interface {
 type Event struct {
 	Message string
 	Payload map[string]any
+	Channel Channel // The suffix for the channel's environment variable, e.g., "ERROR".
 	Options Options
 }
 
 // Options for alerts.
 type Options struct {
-	RateLimit     time.Duration // The minimum duration between alert messages (e.g., time.Hour or time.Minute).
-	ChannelSuffix string        // The suffix for the channel's environment variable, e.g., "ERROR".
+	RateLimit time.Duration // The minimum duration between alert messages (e.g., time.Hour or time.Minute).
+	// ChannelSuffix alertchannel.Channel
 }
 
 // DefaultOpts returns option with 1-hour rate limit.
-func DefaultOpts(channel string) Options {
+func DefaultOpts() Options {
 	return Options{
-		RateLimit:     time.Hour,
-		ChannelSuffix: channel,
+		RateLimit: time.Hour,
+		// ChannelSuffix: channel,
 	}
 }

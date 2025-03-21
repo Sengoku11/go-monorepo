@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
-	"github.com/Sengoku11/go-monorepo/pkg/alerter/channels"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/slack"
 	"github.com/Sengoku11/go-monorepo/pkg/bootstrap"
 )
@@ -20,8 +19,8 @@ func main() {
 		log.Panic("cannot create slack alerter", "error", err)
 	}
 
-	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST), map[string]any{"key1": "value1"})
-	log.Alert(ctx, "this is alert", alerter.DefaultOpts(channels.TEST), map[string]any{"key2": "value2"})
+	log.Alert(ctx, "this is alert", alerter.Test, alerter.DefaultOpts(), map[string]any{"key1": "value1"})
+	log.Alert(ctx, "this is alert", alerter.Test, alerter.DefaultOpts(), map[string]any{"key2": "value2"})
 	log.Warn("only first alert sent: default 1h rate limit for identical messages, even with different payloads")
 
 	var wg sync.WaitGroup

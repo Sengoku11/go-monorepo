@@ -54,7 +54,7 @@ type Alerter interface {
 	AddHook(hook alerter.Alerter)
 
 	// Alert the message to connected hooks.
-	Alert(ctx context.Context, message string, options alerter.Options, payload map[string]any)
+	Alert(ctx context.Context, channel alerter.Channel, message string, options alerter.Options, payload map[string]any)
 }
 
 // Options represent control methods over Logger.

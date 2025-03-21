@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
-	"github.com/Sengoku11/go-monorepo/pkg/alerter/channels"
 	"github.com/Sengoku11/go-monorepo/pkg/ratelim"
 	"github.com/slack-go/slack"
 )
@@ -53,7 +52,7 @@ func (a *Alerter) Alert(ctx context.Context, event alerter.Event) error {
 
 	a.msgByTS.AddNow(hashed)
 
-	channel, err := channels.FromENV("SLACK", event.Options.ChannelSuffix)
+	channel, err := alerter.FromENV("SLACK", event.Channel)
 	if err != nil {
 		return fmt.Errorf(`SLACK_* env is not defined: %w`, err)
 	}

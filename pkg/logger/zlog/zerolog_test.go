@@ -36,9 +36,10 @@ func TestAlert(t *testing.T) {
 	t.Parallel()
 
 	mockAlert := mockalerter.NewMockAlerter(t)
-	expectedOptions := alerter.Options{ChannelSuffix: "TEST", RateLimit: time.Second}
+	expectedOptions := alerter.Options{RateLimit: time.Second}
 	expectedPayload := map[string]any{testKey1: testVal1}
 	expectedEvent := alerter.Event{
+		Channel: alerter.Test,
 		Message: testMessage,
 		Payload: expectedPayload,
 		Options: expectedOptions,
@@ -54,7 +55,7 @@ func TestAlert(t *testing.T) {
 	// Add two "different" alerters
 	log.AddHook(mockAlert)
 	log.AddHook(mockAlert)
-	log.Alert(t.Context(), testMessage, expectedOptions, expectedPayload)
+	log.Alert(t.Context(), alerter.Test, testMessage, expectedOptions, expectedPayload)
 
 	mockAlert.AssertNumberOfCalls(t, "Alert", 2)
 }
@@ -63,13 +64,13 @@ func TestAlert_NotCalled(t *testing.T) {
 	t.Parallel()
 
 	mockAlert := mockalerter.NewMockAlerter(t)
-	expectedOptions := alerter.Options{ChannelSuffix: "TEST", RateLimit: time.Second}
+	expectedOptions := alerter.Options{RateLimit: time.Second}
 	expectedPayload := map[string]any{testKey1: testVal1}
 
 	log, _ := newTestLogger()
 
 	// Alert without any hook
-	log.Alert(t.Context(), testMessage, expectedOptions, expectedPayload)
+	log.Alert(t.Context(), alerter.Test, testMessage, expectedOptions, expectedPayload)
 
 	mockAlert.AssertNumberOfCalls(t, "Alert", 0)
 }
@@ -101,8 +102,8 @@ func TestAlert_Errors(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			expectedChannel := "TEST_ALERT"
-			expectedOptions := alerter.Options{ChannelSuffix: expectedChannel, RateLimit: time.Second}
+			expectedChannel := alerter.Test
+			expectedOptions := alerter.Options{RateLimit: time.Second}
 			expectedPayload := map[string]any{testKey1: testVal1}
 
 			log, buf := newTestLogger()
@@ -114,15 +115,15 @@ func TestAlert_Errors(t *testing.T) {
 				Return(testCase.returnedError).
 				Once()
 
-			log.Alert(t.Context(), testMessage, expectedOptions, expectedPayload)
+			log.Alert(t.Context(), expectedChannel, testMessage, expectedOptions, expectedPayload)
 
 			out := buf.String()
 
 			expectedSubstrings := []string{
 				`"level":"error"`,
+				testCase.expectedErrorSub,
 				fmt.Sprintf(`"msg":"%s"`, testMessage),
 				fmt.Sprintf(`"message":"%s"`, testCase.expectedLogMsg),
-				testCase.expectedErrorSub,
 				fmt.Sprintf(`"channel":"%s"`, expectedChannel),
 			}
 
