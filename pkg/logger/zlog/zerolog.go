@@ -1,4 +1,5 @@
-package logger
+// Package zlog implements logger.Logger interface via zerolog logger.
+package zlog
 
 import (
 	"context"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
+	"github.com/Sengoku11/go-monorepo/pkg/logger"
 	"github.com/Sengoku11/go-monorepo/pkg/ratelim"
 	"github.com/rs/zerolog"
 )
@@ -22,14 +24,14 @@ type ZerologLogger struct {
 	msgByTS *ratelim.MessageByTS
 }
 
-// NewZerologLogger creates a new instance of ZerologLogger.
-func NewZerologLogger() *ZerologLogger {
+// New creates a new instance of ZerologLogger.
+func New() *ZerologLogger {
 	consoleWriter := zerolog.NewConsoleWriter()
 	consoleWriter.TimeFormat = time.DateTime
-	logger := zerolog.New(consoleWriter).With().Timestamp().Logger()
+	log := zerolog.New(consoleWriter).With().Timestamp().Logger()
 
 	return &ZerologLogger{
-		logger:  &logger,
+		logger:  &log,
 		debug:   false,
 		hooks:   []alerter.Alerter{},
 		msgByTS: ratelim.NewMap(),
@@ -83,7 +85,7 @@ func (l *ZerologLogger) Alert(ctx context.Context, message string, options alert
 		Options: options,
 	}
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, alertTimeout)
+	timeoutCtx, cancel := context.WithTimeout(ctx, logger.AlertTimeout)
 	defer cancel()
 
 	var wg sync.WaitGroup
@@ -96,14 +98,14 @@ func (l *ZerologLogger) Alert(ctx context.Context, message string, options alert
 			err := h.Alert(timeoutCtx, event)
 			if errors.Is(err, context.DeadlineExceeded) {
 				l.Error(
-					ErrSendTimeout.Error(),
+					logger.ErrSendTimeout.Error(),
 					"error", context.DeadlineExceeded.Error(),
 					"channel", options.ChannelSuffix,
 					"msg", message,
 				)
 			} else if err != nil {
 				l.Error(
-					ErrSendAlert.Error(),
+					logger.ErrSendAlert.Error(),
 					"error", err.Error(),
 					"channel", options.ChannelSuffix,
 					"msg", message,
@@ -135,7 +137,7 @@ func (l *ZerologLogger) DisableDebugMode() {
 }
 
 // WithRateLim applies rate limiting to a logging callback based on the message hash.
-func (l *ZerologLogger) WithRateLim(cooldown time.Duration, callback LogMethod) LogMethod {
+func (l *ZerologLogger) WithRateLim(cooldown time.Duration, callback logger.LogMethod) logger.LogMethod {
 	return func(message string, args ...any) {
 		hashed, err := ratelim.Hash(message)
 		if err != nil {
@@ -159,7 +161,7 @@ func (l *ZerologLogger) WithRateLim(cooldown time.Duration, callback LogMethod) 
 }
 
 // WithCallStack adds a call stack to the log.
-func (l *ZerologLogger) WithCallStack(callback LogMethod) LogMethod {
+func (l *ZerologLogger) WithCallStack(callback logger.LogMethod) logger.LogMethod {
 	return func(message string, args ...any) {
 		if pc, _, line, ok := runtime.Caller(1); ok {
 			funcNameFull := runtime.FuncForPC(pc).Name()
@@ -171,4 +173,4 @@ func (l *ZerologLogger) WithCallStack(callback LogMethod) LogMethod {
 	}
 }
 
-var _ Logger = (*ZerologLogger)(nil)
+var _ logger.Logger = (*ZerologLogger)(nil)

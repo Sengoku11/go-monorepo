@@ -1,5 +1,5 @@
 //nolint:testpackage
-package logger
+package zlog
 
 import (
 	"bytes"
@@ -12,6 +12,7 @@ import (
 
 	mockalerter "github.com/Sengoku11/go-monorepo/mocks/github.com/Sengoku11/go-monorepo/pkg/alerter"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
+	"github.com/Sengoku11/go-monorepo/pkg/logger"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -25,7 +26,7 @@ const (
 func newTestLogger() (*ZerologLogger, *bytes.Buffer) {
 	var buf bytes.Buffer
 
-	l := NewZerologLogger()
+	l := New()
 	*l.logger = l.logger.Output(&buf)
 
 	return l, &buf
@@ -85,13 +86,13 @@ func TestAlert_Errors(t *testing.T) {
 		{
 			name:             "timeout",
 			returnedError:    context.DeadlineExceeded,
-			expectedLogMsg:   ErrSendTimeout.Error(),
+			expectedLogMsg:   logger.ErrSendTimeout.Error(),
 			expectedErrorSub: fmt.Sprintf(`"error":"%s"`, context.DeadlineExceeded),
 		},
 		{
 			name:             "canceled",
 			returnedError:    context.Canceled,
-			expectedLogMsg:   ErrSendAlert.Error(),
+			expectedLogMsg:   logger.ErrSendAlert.Error(),
 			expectedErrorSub: fmt.Sprintf(`"error":"%s"`, context.Canceled),
 		},
 	}

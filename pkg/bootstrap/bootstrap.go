@@ -10,6 +10,7 @@ import (
 
 	"github.com/Sengoku11/go-monorepo/pkg/loadenv"
 	"github.com/Sengoku11/go-monorepo/pkg/logger"
+	"github.com/Sengoku11/go-monorepo/pkg/logger/zlog"
 )
 
 // Default creates a context that is canceled on SIGINT or SIGTERM, loads environment variables
@@ -25,7 +26,7 @@ func Default() (context.Context, context.CancelCauseFunc, logger.Logger) {
 		panic("cannot start locally: " + err.Error())
 	}
 
-	log := logger.NewZerologLogger()
+	log := zlog.New()
 	ctxWithCause, cancelCause := context.WithCancelCause(ctx)
 
 	// Set debug mode on if enabled

@@ -11,7 +11,8 @@ import (
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
 )
 
-const alertTimeout = time.Second * 2
+// AlertTimeout defines how long to wait for alert to be sent.
+const AlertTimeout = time.Second * 2
 
 // Error that is logged at the error level when the alert hook fails.
 var (
