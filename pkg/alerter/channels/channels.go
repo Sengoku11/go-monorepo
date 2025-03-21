@@ -3,6 +3,7 @@ package channels
 
 // Prefixes of environment variables that contains channels names.
 const (
-	TEST  = "TEST"
-	Error = "ERROR"
+	TEST      = "TEST"
+	Error     = "ERROR"
+	FlagError = "FLAG_ERROR"
 )

@@ -47,7 +47,7 @@ func TestAlert(t *testing.T) {
 		Alert(mock.Anything, expectedEvent).
 		Return(nil)
 
-	log := NewZerologLogger()
+	log, _ := newTestLogger()
 
 	// Add two "different" alerters
 	log.AddHook(mockAlert)
@@ -64,7 +64,7 @@ func TestAlert_NotCalled(t *testing.T) {
 	expectedOptions := alerter.Options{ChannelSuffix: "TEST", RateLimit: time.Second}
 	expectedPayload := map[string]any{testKey1: testVal1}
 
-	log := NewZerologLogger()
+	log, _ := newTestLogger()
 
 	// Alert without any hook
 	log.Alert(t.Context(), testMessage, expectedOptions, expectedPayload)

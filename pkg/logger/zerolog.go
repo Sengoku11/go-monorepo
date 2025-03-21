@@ -40,6 +40,11 @@ func (l *ZerologLogger) WithRateLim(cooldown time.Duration, callback LogMethod) 
 		hashed, err := ratelim.Hash(message)
 		if err != nil {
 			l.Error("failed to hash message in WithRateLim", "error", err.Error(), "message", message)
+
+			// Calling anyway
+			callback(message, args...)
+
+			return
 		}
 
 		if ts, exists := l.msgByTS.Get(hashed); exists {

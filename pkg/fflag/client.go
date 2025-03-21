@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
+	"github.com/Sengoku11/go-monorepo/pkg/alerter/channels"
 	"github.com/Sengoku11/go-monorepo/pkg/logger"
 	"github.com/open-feature/go-sdk/openfeature"
 )
@@ -70,8 +71,11 @@ func (c *Client) fetchBooleanValue(ctx context.Context, flag BooleanFlag) (bool,
 	if err != nil {
 		msg := fmt.Sprintf("cannot fetch %s flag", flag.Name)
 
-		c.log.Alert(ctx, msg, alerter.DefaultOpts("FLAG_ERROR"), map[string]any{"error": err.Error()})
-		c.log.Error(msg, "error", err.Error())
+		c.log.Alert(ctx, msg, alerter.DefaultOpts(channels.FlagError), map[string]any{"error": err.Error()})
+
+		//nolint:mnd
+		logErr := c.log.WithRateLim(10*time.Minute, c.log.Error)
+		logErr(msg, "error", err.Error())
 
 		return flag.DefaultValue, fmt.Errorf("%s: %w", msg, err)
 	}
