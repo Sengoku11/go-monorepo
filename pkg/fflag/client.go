@@ -70,7 +70,7 @@ func (c *Client) fetchBooleanValue(ctx context.Context, flag BooleanFlag) (bool,
 	if err != nil {
 		msg := fmt.Sprintf("cannot fetch %s flag", flag.Name)
 
-		c.log.Alert(ctx, alerter.FlagError, msg, alerter.DefaultOpts(), map[string]any{"error": err.Error()})
+		c.log.Alert(ctx, alerter.FlagError, msg, map[string]any{"error": err.Error()})
 
 		//nolint:mnd
 		logErr := c.log.WithRateLim(10*time.Minute, c.log.Error)

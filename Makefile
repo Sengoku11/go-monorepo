@@ -28,3 +28,6 @@ test:
 		echo "Run tests in $$dir..."; \
 		( cd $$dir && go test -race -cover ./...) || exit; \
 	done
+
+mock:
+	$(shell go env GOPATH)/bin/mockery

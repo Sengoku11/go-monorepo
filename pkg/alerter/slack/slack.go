@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
 	"github.com/Sengoku11/go-monorepo/pkg/ratelim"
@@ -37,38 +38,53 @@ func New() (*Alerter, error) {
 	}, nil
 }
 
-// Alert given event to the Slack channel.
-func (a *Alerter) Alert(ctx context.Context, event alerter.Event) error {
-	hashed, err := ratelim.Hash(event.Message)
+// AlertWithRateLimit given event to the Slack channel.
+func (a *Alerter) AlertWithRateLimit(
+	ctx context.Context,
+	cooldown time.Duration,
+	channel alerter.Channel,
+	message string,
+	payload map[string]any,
+) error {
+	hashed, err := ratelim.Hash(message)
 	if err != nil {
 		return fmt.Errorf("alerter ratelimit: %w", err)
 	}
 
 	if ts, exists := a.msgByTS.Get(hashed); exists {
-		if !ratelim.IsPastDue(ts, event.Options.RateLimit) {
+		if !ratelim.IsPastDue(ts, cooldown) {
 			return nil
 		}
 	}
 
 	a.msgByTS.AddNow(hashed)
 
-	channel, err := alerter.FromENV("SLACK", event.Channel)
+	if err := a.Alert(ctx, channel, message, payload); err != nil {
+		a.msgByTS.Remove(hashed) // retry next time
+
+		return err
+	}
+
+	return nil
+}
+
+// Alert given event to the Slack channel.
+func (a *Alerter) Alert(ctx context.Context, suffix alerter.Channel, message string, payload map[string]any) error {
+	channel, err := alerter.FromENV("SLACK", suffix)
 	if err != nil {
 		return fmt.Errorf(`SLACK_* env is not defined: %w`, err)
 	}
 
-	payloadBytes, err := json.Marshal(event.Payload)
+	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("alerter payload marshal: %w", err)
 	}
 
 	payloadString := string(payloadBytes)
-	msg := event.Message + "\n" + payloadString
+	msg := message + "\n" + payloadString
 
 	_, _, err = a.client.PostMessageContext(ctx, channel, slack.MsgOptionText(msg, false))
 	if err != nil {
-		a.msgByTS.Remove(hashed) // retry next time
-
 		return fmt.Errorf("slack post message: %w", err)
 	}
 

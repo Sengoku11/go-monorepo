@@ -36,18 +36,11 @@ func TestAlert(t *testing.T) {
 	t.Parallel()
 
 	mockAlert := mockalerter.NewMockAlerter(t)
-	expectedOptions := alerter.Options{RateLimit: time.Second}
 	expectedPayload := map[string]any{testKey1: testVal1}
-	expectedEvent := alerter.Event{
-		Channel: alerter.Test,
-		Message: testMessage,
-		Payload: expectedPayload,
-		Options: expectedOptions,
-	}
 
 	mockAlert.
 		EXPECT().
-		Alert(mock.Anything, expectedEvent).
+		Alert(mock.Anything, alerter.Test, testMessage, expectedPayload).
 		Return(nil)
 
 	log, _ := newTestLogger()
@@ -55,7 +48,7 @@ func TestAlert(t *testing.T) {
 	// Add two "different" alerters
 	log.AddHook(mockAlert)
 	log.AddHook(mockAlert)
-	log.Alert(t.Context(), alerter.Test, testMessage, expectedOptions, expectedPayload)
+	log.Alert(t.Context(), alerter.Test, testMessage, expectedPayload)
 
 	mockAlert.AssertNumberOfCalls(t, "Alert", 2)
 }
@@ -64,13 +57,12 @@ func TestAlert_NotCalled(t *testing.T) {
 	t.Parallel()
 
 	mockAlert := mockalerter.NewMockAlerter(t)
-	expectedOptions := alerter.Options{RateLimit: time.Second}
 	expectedPayload := map[string]any{testKey1: testVal1}
 
 	log, _ := newTestLogger()
 
 	// Alert without any hook
-	log.Alert(t.Context(), alerter.Test, testMessage, expectedOptions, expectedPayload)
+	log.Alert(t.Context(), alerter.Test, testMessage, expectedPayload)
 
 	mockAlert.AssertNumberOfCalls(t, "Alert", 0)
 }
@@ -103,19 +95,17 @@ func TestAlert_Errors(t *testing.T) {
 			t.Parallel()
 
 			expectedChannel := alerter.Test
-			expectedOptions := alerter.Options{RateLimit: time.Second}
 			expectedPayload := map[string]any{testKey1: testVal1}
 
 			log, buf := newTestLogger()
 			mockAlert := mockalerter.NewMockAlerter(t)
-			log.AddHook(mockAlert)
-
 			mockAlert.
-				On("Alert", mock.Anything, mock.Anything).
+				On("Alert", mock.Anything, expectedChannel, testMessage, expectedPayload).
 				Return(testCase.returnedError).
 				Once()
 
-			log.Alert(t.Context(), expectedChannel, testMessage, expectedOptions, expectedPayload)
+			log.AddHook(mockAlert)
+			log.Alert(t.Context(), expectedChannel, testMessage, expectedPayload)
 
 			out := buf.String()
 

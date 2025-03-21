@@ -7,7 +7,7 @@ import (
 )
 
 // Channel represents a constant for channel's suffix.
-type Channel = string
+type Channel string
 
 // Channel of environment variables that contains channels names.
 //
