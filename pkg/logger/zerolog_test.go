@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -272,8 +273,46 @@ func TestZerologLogger_DisableDebugMode(t *testing.T) {
 	}
 }
 
-//nolint:paralleltest,tparallel
+func TestZerologLogger_WithoutRateLim(t *testing.T) {
+	t.Parallel()
+
+	log, buf := newTestLogger()
+	runs := 10
+
+	for range runs {
+		log.Info(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
+	}
+
+	out := buf.String()
+
+	// Expecting the same number of logs we have logged.
+	logEntries := strings.Split(strings.TrimSpace(out), "\n")
+	if len(logEntries) != runs {
+		t.Errorf("expected %d logs, but got %d", runs, len(logEntries))
+	}
+}
+
 func TestZerologLogger_WithRateLim(t *testing.T) {
+	t.Parallel()
+
+	log, buf := newTestLogger()
+	runs := 10
+
+	info := log.WithRateLim(time.Minute, log.Info)
+	for range runs {
+		info(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
+	}
+
+	out := buf.String()
+
+	// Even though we attempted to log 10 times, the rate limiter should only allow one log.
+	logEntries := strings.Split(strings.TrimSpace(out), "\n")
+	if len(logEntries) != 1 {
+		t.Errorf("expected 1 log, but got %d", len(logEntries))
+	}
+}
+
+func TestZerologLogger_WithCallStack(t *testing.T) {
 	t.Parallel()
 
 	log, buf := newTestLogger()
@@ -286,45 +325,20 @@ func TestZerologLogger_WithRateLim(t *testing.T) {
 		fmt.Sprintf(`"%s":"%s"`, testKey3, testVal3),
 	}
 
-	runs := 10
-	testCases := []struct {
-		name         string
-		infoFunc     LogMethod
-		expectedLogs int
-	}{
-		{
-			name:         "without rate limit",
-			infoFunc:     log.Info,
-			expectedLogs: runs,
-		},
-		{
-			name:         "with rate limit",
-			infoFunc:     log.WithRateLim(time.Minute, log.Info),
-			expectedLogs: 1,
-		},
+	info := log.WithCallStack(log.Info)
+	info(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
+
+	out := buf.String()
+	for _, substring := range expectedSubstrings {
+		if !strings.Contains(out, substring) {
+			t.Errorf(`expected log output to contain %s, got %q`, substring, out)
+		}
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			buf.Reset()
-
-			for range runs {
-				testCase.infoFunc(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
-			}
-
-			out := buf.String()
-			for _, substring := range expectedSubstrings {
-				if !strings.Contains(out, substring) {
-					t.Errorf(`expected log output to contain %s, got %q`, substring, out)
-				}
-			}
-
-			logEntries := strings.Split(strings.TrimSpace(out), "\n")
-
-			logCount := len(logEntries)
-			if logCount != testCase.expectedLogs {
-				t.Errorf("expected %d logs, but printed: %d\n", testCase.expectedLogs, logCount)
-			}
-		})
+	// Using a regular expression to check that the stack field contains the function name.
+	// This regex looks for "stack":"<anything>TestZerologLogger_WithCallStack<anything>"
+	re := regexp.MustCompile(`"stack":"[^"]*TestZerologLogger_WithCallStack[^"]*"`)
+	if !re.MatchString(out) {
+		t.Errorf("expected stack field to contain function name TestZerologLogger_WithCallStack, got %q", out)
 	}
 }

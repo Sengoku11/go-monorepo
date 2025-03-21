@@ -86,6 +86,54 @@ func (_c *MockOptions_EnableDebugMode_Call) RunAndReturn(run func()) *MockOption
 	return _c
 }
 
+// WithCallStack provides a mock function with given fields: cb
+func (_m *MockOptions) WithCallStack(cb logger.LogMethod) logger.LogMethod {
+	ret := _m.Called(cb)
+
+	if len(ret) == 0 {
+		panic("no return value specified for WithCallStack")
+	}
+
+	var r0 logger.LogMethod
+	if rf, ok := ret.Get(0).(func(logger.LogMethod) logger.LogMethod); ok {
+		r0 = rf(cb)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(logger.LogMethod)
+		}
+	}
+
+	return r0
+}
+
+// MockOptions_WithCallStack_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'WithCallStack'
+type MockOptions_WithCallStack_Call struct {
+	*mock.Call
+}
+
+// WithCallStack is a helper method to define mock.On call
+//   - cb logger.LogMethod
+func (_e *MockOptions_Expecter) WithCallStack(cb interface{}) *MockOptions_WithCallStack_Call {
+	return &MockOptions_WithCallStack_Call{Call: _e.mock.On("WithCallStack", cb)}
+}
+
+func (_c *MockOptions_WithCallStack_Call) Run(run func(cb logger.LogMethod)) *MockOptions_WithCallStack_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(logger.LogMethod))
+	})
+	return _c
+}
+
+func (_c *MockOptions_WithCallStack_Call) Return(_a0 logger.LogMethod) *MockOptions_WithCallStack_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockOptions_WithCallStack_Call) RunAndReturn(run func(logger.LogMethod) logger.LogMethod) *MockOptions_WithCallStack_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // WithRateLim provides a mock function with given fields: cooldown, cb
 func (_m *MockOptions) WithRateLim(cooldown time.Duration, cb logger.LogMethod) logger.LogMethod {
 	ret := _m.Called(cooldown, cb)

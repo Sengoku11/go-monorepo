@@ -11,7 +11,7 @@ By leveraging `go.work`, imports are simplified, and integration with private re
 * Wrapped [Zerolog](https://github.com/rs/zerolog) logger
 * Alerter hooks with [Slack](https://github.com/slack-go/slack) and per-message rate limiting.
 * Custom middlewares.
-* Feature flags via [OpenFeature](https://github.com/open-feature/go-sdk) and [Flipt](https://www.flipt.io/). 
+* Feature flags via [OpenFeature](https://github.com/open-feature/go-sdk) SDK. 
 * Auto-generated mocks via `.mockery.yaml`.
 * Auto-generated documentation for all error codes.
 

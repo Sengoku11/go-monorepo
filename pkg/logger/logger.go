@@ -66,6 +66,9 @@ type Options interface {
 
 	// WithRateLim applies rate limiting based on the message hash.
 	WithRateLim(cooldown time.Duration, cb LogMethod) LogMethod
+
+	// WithCallStack adds call stack to the log.
+	WithCallStack(cb LogMethod) LogMethod
 }
 
 // Logger represents an extended interface of logging options and methods.

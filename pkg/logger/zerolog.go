@@ -3,6 +3,8 @@ package logger
 import (
 	"context"
 	"errors"
+	"fmt"
+	"runtime"
 	"sync"
 	"time"
 
@@ -32,45 +34,6 @@ func NewZerologLogger() *ZerologLogger {
 		hooks:   []alerter.Alerter{},
 		msgByTS: ratelim.NewMap(),
 	}
-}
-
-// WithRateLim applies rate limiting to a logging callback based on the message hash.
-func (l *ZerologLogger) WithRateLim(cooldown time.Duration, callback LogMethod) LogMethod {
-	return func(message string, args ...any) {
-		hashed, err := ratelim.Hash(message)
-		if err != nil {
-			l.Error("failed to hash message in WithRateLim", "error", err.Error(), "message", message)
-
-			// Calling anyway
-			callback(message, args...)
-
-			return
-		}
-
-		if ts, exists := l.msgByTS.Get(hashed); exists {
-			if !ratelim.IsPastDue(ts, cooldown) {
-				return
-			}
-		}
-
-		l.msgByTS.AddNow(hashed)
-		callback(message, args...)
-	}
-}
-
-// EnableDebugMode to log debug messages.
-func (l *ZerologLogger) EnableDebugMode() {
-	l.debug = true
-}
-
-// DisableDebugMode to avoid spamming debug messages.
-func (l *ZerologLogger) DisableDebugMode() {
-	l.debug = false
-}
-
-// AddHook for sending alerts to messengers.
-func (l *ZerologLogger) AddHook(hook alerter.Alerter) {
-	l.hooks = append(l.hooks, hook)
 }
 
 // Info logs a message at the info level.
@@ -105,6 +68,11 @@ func (l *ZerologLogger) Fatal(message string, args ...any) {
 // Panic logs a message at the panic level and then panics, which stops the ordinary flow of a goroutine.
 func (l *ZerologLogger) Panic(message string, args ...any) {
 	l.logger.Panic().Fields(args).Msg(message)
+}
+
+// AddHook for sending alerts to messengers.
+func (l *ZerologLogger) AddHook(hook alerter.Alerter) {
+	l.hooks = append(l.hooks, hook)
 }
 
 // Alert the message to connected hooks.
@@ -153,6 +121,53 @@ func (l *ZerologLogger) Alert(ctx context.Context, message string, options alert
 	select {
 	case <-ctx.Done():
 	case <-wgChan:
+	}
+}
+
+// EnableDebugMode to log debug messages.
+func (l *ZerologLogger) EnableDebugMode() {
+	l.debug = true
+}
+
+// DisableDebugMode to avoid spamming debug messages.
+func (l *ZerologLogger) DisableDebugMode() {
+	l.debug = false
+}
+
+// WithRateLim applies rate limiting to a logging callback based on the message hash.
+func (l *ZerologLogger) WithRateLim(cooldown time.Duration, callback LogMethod) LogMethod {
+	return func(message string, args ...any) {
+		hashed, err := ratelim.Hash(message)
+		if err != nil {
+			l.Error("failed to hash message in WithRateLim", "error", err.Error(), "message", message)
+
+			// Calling without limiting
+			callback(message, args...)
+
+			return
+		}
+
+		if ts, exists := l.msgByTS.Get(hashed); exists {
+			if !ratelim.IsPastDue(ts, cooldown) {
+				return
+			}
+		}
+
+		l.msgByTS.AddNow(hashed)
+		callback(message, args...)
+	}
+}
+
+// WithCallStack adds a call stack to the log.
+func (l *ZerologLogger) WithCallStack(callback LogMethod) LogMethod {
+	return func(message string, args ...any) {
+		if pc, _, line, ok := runtime.Caller(1); ok {
+			funcNameFull := runtime.FuncForPC(pc).Name()
+
+			args = append(args, "stack", fmt.Sprintf("%ss#%d", funcNameFull, line))
+		}
+
+		callback(message, args...)
 	}
 }
 
