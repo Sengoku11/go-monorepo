@@ -9,14 +9,12 @@ import (
 	"os"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
+	"github.com/Sengoku11/go-monorepo/pkg/alerter/channels"
 	"github.com/Sengoku11/go-monorepo/pkg/ratelim"
 	"github.com/slack-go/slack"
 )
 
-var (
-	errChannelNotFound = errors.New("channel not found")
-	errTokenNotFound   = errors.New("SLACK_API_TOKEN environment variable not set")
-)
+var errTokenNotFound = errors.New("SLACK_API_TOKEN environment variable not set")
 
 // Alerter is a Slack implementation of alerter.Alerter interface.
 type Alerter struct {
@@ -55,9 +53,9 @@ func (a *Alerter) Alert(ctx context.Context, event alerter.Event) error {
 
 	a.msgByTS.AddNow(hashed)
 
-	channel := getChannel(event.Options.ChannelSuffix)
-	if channel == "" {
-		return fmt.Errorf(`env SLACK_%s not defined: %w`, event.Options.ChannelSuffix, errChannelNotFound)
+	channel, err := channels.FromENV("SLACK", event.Options.ChannelSuffix)
+	if err != nil {
+		return fmt.Errorf(`SLACK_* env is not defined: %w`, err)
 	}
 
 	payloadBytes, err := json.Marshal(event.Payload)
@@ -76,10 +74,6 @@ func (a *Alerter) Alert(ctx context.Context, event alerter.Event) error {
 	}
 
 	return nil
-}
-
-func getChannel(envSuffix string) string {
-	return os.Getenv("SLACK_" + envSuffix)
 }
 
 var _ alerter.Alerter = (*Alerter)(nil)
