@@ -5,6 +5,7 @@ new_feature:
   targeting: # works as switch-case-default, breaking on the first matched condition
     # you can add more users
     - name: admin user
+      # read more about querying here https://github.com/nikunjy/rules
       query: targetingKey eq "admin"
       variation: enabled
 
