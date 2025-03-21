@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Sengoku11/go-monorepo/pkg/logger/ratelim"
+	"github.com/Sengoku11/go-monorepo/pkg/ratelim"
 )
 
 // Hash is deterministic, it will consistently produce the same hash value for the same input string.

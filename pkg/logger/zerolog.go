@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
-	"github.com/Sengoku11/go-monorepo/pkg/logger/ratelim"
+	"github.com/Sengoku11/go-monorepo/pkg/ratelim"
 	"github.com/rs/zerolog"
 )
 

@@ -12,4 +12,5 @@ use (
 	./pkg/loadenv
 	./pkg/logger
 	./pkg/middleware
+	./pkg/ratelim
 )
