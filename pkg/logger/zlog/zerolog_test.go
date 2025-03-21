@@ -22,8 +22,8 @@ const (
 	testVal1, testVal2, testVal3 = "world_1", "world_2", "world_3"
 )
 
-// newTestLogger creates a ZerologLogger that writes to a bytes.Buffer.
-func newTestLogger() (*ZerologLogger, *bytes.Buffer) {
+// newTestLogger creates a Logger that writes to a bytes.Buffer.
+func newTestLogger() (*Logger, *bytes.Buffer) {
 	var buf bytes.Buffer
 
 	l := New()
@@ -149,23 +149,23 @@ func TestZerologLogger(t *testing.T) {
 
 	testCases := []struct {
 		level   string
-		logFunc func(l *ZerologLogger)
+		logFunc func(l *Logger)
 	}{
 		{
 			level: "info",
-			logFunc: func(l *ZerologLogger) {
+			logFunc: func(l *Logger) {
 				l.Info(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
 			},
 		},
 		{
 			level: "warn",
-			logFunc: func(l *ZerologLogger) {
+			logFunc: func(l *Logger) {
 				l.Warn(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
 			},
 		},
 		{
 			level: "error",
-			logFunc: func(l *ZerologLogger) {
+			logFunc: func(l *Logger) {
 				l.Error(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
 			},
 		},

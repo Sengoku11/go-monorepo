@@ -9,7 +9,6 @@ import (
 	"syscall"
 
 	"github.com/Sengoku11/go-monorepo/pkg/loadenv"
-	"github.com/Sengoku11/go-monorepo/pkg/logger"
 	"github.com/Sengoku11/go-monorepo/pkg/logger/zlog"
 )
 
@@ -17,8 +16,8 @@ import (
 // if running locally, and returns a logger instance. It panics if environment loading fails
 // in a local environment.
 //
-//nolint:ireturn
-func Default() (context.Context, context.CancelCauseFunc, logger.Logger) {
+
+func Default() (context.Context, context.CancelCauseFunc, *zlog.Logger) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	if err := loadenv.Local(); err != nil {

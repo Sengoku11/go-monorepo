@@ -15,22 +15,22 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// ZerologLogger is an implementation of Logger interface using zerolog package.
+// Logger is an implementation of logger.Logger interface using zerolog package.
 // It leverages zero-allocation for efficient, structured logging.
-type ZerologLogger struct {
+type Logger struct {
 	logger  *zerolog.Logger
 	hooks   []alerter.Alerter
 	debug   bool
 	msgByTS *ratelim.MessageByTS
 }
 
-// New creates a new instance of ZerologLogger.
-func New() *ZerologLogger {
+// New creates a new instance of Logger.
+func New() *Logger {
 	consoleWriter := zerolog.NewConsoleWriter()
 	consoleWriter.TimeFormat = time.DateTime
 	log := zerolog.New(consoleWriter).With().Timestamp().Logger()
 
-	return &ZerologLogger{
+	return &Logger{
 		logger:  &log,
 		debug:   false,
 		hooks:   []alerter.Alerter{},
@@ -39,12 +39,12 @@ func New() *ZerologLogger {
 }
 
 // Info logs a message at the info level.
-func (l *ZerologLogger) Info(message string, args ...any) {
+func (l *Logger) Info(message string, args ...any) {
 	l.logger.Info().Fields(args).Msg(message)
 }
 
 // Debug logs a message at the info level if env DEBUG is set to true.
-func (l *ZerologLogger) Debug(message string, args ...any) {
+func (l *Logger) Debug(message string, args ...any) {
 	if !l.debug {
 		return
 	}
@@ -53,32 +53,32 @@ func (l *ZerologLogger) Debug(message string, args ...any) {
 }
 
 // Warn logs a message at the warn level.
-func (l *ZerologLogger) Warn(message string, args ...any) {
+func (l *Logger) Warn(message string, args ...any) {
 	l.logger.Warn().Fields(args).Msg(message)
 }
 
 // Error logs a message at the error level.
-func (l *ZerologLogger) Error(message string, args ...any) {
+func (l *Logger) Error(message string, args ...any) {
 	l.logger.Error().Fields(args).Msg(message)
 }
 
 // Fatal logs a message at the fatal level and terminates the app with os.Exit(1).
-func (l *ZerologLogger) Fatal(message string, args ...any) {
+func (l *Logger) Fatal(message string, args ...any) {
 	l.logger.Fatal().Fields(args).Msg(message)
 }
 
 // Panic logs a message at the panic level and then panics, which stops the ordinary flow of a goroutine.
-func (l *ZerologLogger) Panic(message string, args ...any) {
+func (l *Logger) Panic(message string, args ...any) {
 	l.logger.Panic().Fields(args).Msg(message)
 }
 
 // AddHook for sending alerts to messengers.
-func (l *ZerologLogger) AddHook(hook alerter.Alerter) {
+func (l *Logger) AddHook(hook alerter.Alerter) {
 	l.hooks = append(l.hooks, hook)
 }
 
 // Alert the message to connected hooks.
-func (l *ZerologLogger) Alert(ctx context.Context, message string, options alerter.Options, payload map[string]any) {
+func (l *Logger) Alert(ctx context.Context, message string, options alerter.Options, payload map[string]any) {
 	event := alerter.Event{
 		Message: message,
 		Payload: payload,
@@ -127,17 +127,17 @@ func (l *ZerologLogger) Alert(ctx context.Context, message string, options alert
 }
 
 // EnableDebugMode to log debug messages.
-func (l *ZerologLogger) EnableDebugMode() {
+func (l *Logger) EnableDebugMode() {
 	l.debug = true
 }
 
 // DisableDebugMode to avoid spamming debug messages.
-func (l *ZerologLogger) DisableDebugMode() {
+func (l *Logger) DisableDebugMode() {
 	l.debug = false
 }
 
 // WithRateLim applies rate limiting to a logging callback based on the message hash.
-func (l *ZerologLogger) WithRateLim(cooldown time.Duration, callback logger.LogMethod) logger.LogMethod {
+func (l *Logger) WithRateLim(cooldown time.Duration, callback logger.LogMethod) logger.LogMethod {
 	return func(message string, args ...any) {
 		hashed, err := ratelim.Hash(message)
 		if err != nil {
@@ -161,7 +161,7 @@ func (l *ZerologLogger) WithRateLim(cooldown time.Duration, callback logger.LogM
 }
 
 // WithCallStack adds a call stack to the log.
-func (l *ZerologLogger) WithCallStack(callback logger.LogMethod) logger.LogMethod {
+func (l *Logger) WithCallStack(callback logger.LogMethod) logger.LogMethod {
 	return func(message string, args ...any) {
 		if pc, _, line, ok := runtime.Caller(1); ok {
 			funcNameFull := runtime.FuncForPC(pc).Name()
@@ -173,4 +173,4 @@ func (l *ZerologLogger) WithCallStack(callback logger.LogMethod) logger.LogMetho
 	}
 }
 
-var _ logger.Logger = (*ZerologLogger)(nil)
+var _ logger.Logger = (*Logger)(nil)
