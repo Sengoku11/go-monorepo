@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
@@ -20,7 +21,7 @@ import (
 type Logger struct {
 	logger  *zerolog.Logger
 	hooks   []alerter.Alerter
-	debug   bool
+	debug   *atomic.Bool
 	msgByTS *ratelim.MessageByTS
 }
 
@@ -32,7 +33,7 @@ func New() *Logger {
 
 	return &Logger{
 		logger:  &log,
-		debug:   false,
+		debug:   new(atomic.Bool),
 		hooks:   []alerter.Alerter{},
 		msgByTS: ratelim.NewMap(),
 	}
@@ -41,15 +42,6 @@ func New() *Logger {
 // Info logs a message at the info level.
 func (l *Logger) Info(message string, args ...any) {
 	l.logger.Info().Fields(args).Msg(message)
-}
-
-// Debug logs a message at the info level if env DEBUG is set to true.
-func (l *Logger) Debug(message string, args ...any) {
-	if !l.debug {
-		return
-	}
-
-	l.logger.Debug().Fields(args).Msg(message)
 }
 
 // Warn logs a message at the warn level.
@@ -70,6 +62,62 @@ func (l *Logger) Fatal(message string, args ...any) {
 // Panic logs a message at the panic level and then panics, which stops the ordinary flow of a goroutine.
 func (l *Logger) Panic(message string, args ...any) {
 	l.logger.Panic().Fields(args).Msg(message)
+}
+
+// Debug logs a message at the info level if env DEBUG is set to true.
+func (l *Logger) Debug(message string, args ...any) {
+	if !l.debug.Load() {
+		return
+	}
+
+	l.logger.Debug().Fields(args).Msg(message)
+}
+
+// EnableDebugMode to log debug messages.
+func (l *Logger) EnableDebugMode() {
+	l.debug.Store(true)
+}
+
+// DisableDebugMode to avoid spamming debug messages.
+func (l *Logger) DisableDebugMode() {
+	l.debug.Store(false)
+}
+
+// WithRateLim applies rate limiting to a logging callback based on the message hash.
+func (l *Logger) WithRateLim(cooldown time.Duration, callback logger.LogMethod) logger.LogMethod {
+	return func(message string, args ...any) {
+		hashed, err := ratelim.Hash(message)
+		if err != nil {
+			l.Error("failed to hash message in WithRateLim", "error", err.Error(), "message", message)
+
+			// Calling without limiting
+			callback(message, args...)
+
+			return
+		}
+
+		if ts, exists := l.msgByTS.Get(hashed); exists {
+			if !ratelim.IsPastDue(ts, cooldown) {
+				return
+			}
+		}
+
+		l.msgByTS.AddNow(hashed)
+		callback(message, args...)
+	}
+}
+
+// WithCallStack adds a call stack to the log.
+func (l *Logger) WithCallStack(callback logger.LogMethod) logger.LogMethod {
+	return func(message string, args ...any) {
+		if pc, _, line, ok := runtime.Caller(1); ok {
+			funcNameFull := runtime.FuncForPC(pc).Name()
+
+			args = append(args, "stack", fmt.Sprintf("%ss#%d", funcNameFull, line))
+		}
+
+		callback(message, args...)
+	}
 }
 
 // AddHook for sending alerts to messengers.
@@ -123,53 +171,6 @@ func (l *Logger) Alert(ctx context.Context, message string, options alerter.Opti
 	select {
 	case <-ctx.Done():
 	case <-wgChan:
-	}
-}
-
-// EnableDebugMode to log debug messages.
-func (l *Logger) EnableDebugMode() {
-	l.debug = true
-}
-
-// DisableDebugMode to avoid spamming debug messages.
-func (l *Logger) DisableDebugMode() {
-	l.debug = false
-}
-
-// WithRateLim applies rate limiting to a logging callback based on the message hash.
-func (l *Logger) WithRateLim(cooldown time.Duration, callback logger.LogMethod) logger.LogMethod {
-	return func(message string, args ...any) {
-		hashed, err := ratelim.Hash(message)
-		if err != nil {
-			l.Error("failed to hash message in WithRateLim", "error", err.Error(), "message", message)
-
-			// Calling without limiting
-			callback(message, args...)
-
-			return
-		}
-
-		if ts, exists := l.msgByTS.Get(hashed); exists {
-			if !ratelim.IsPastDue(ts, cooldown) {
-				return
-			}
-		}
-
-		l.msgByTS.AddNow(hashed)
-		callback(message, args...)
-	}
-}
-
-// WithCallStack adds a call stack to the log.
-func (l *Logger) WithCallStack(callback logger.LogMethod) logger.LogMethod {
-	return func(message string, args ...any) {
-		if pc, _, line, ok := runtime.Caller(1); ok {
-			funcNameFull := runtime.FuncForPC(pc).Name()
-
-			args = append(args, "stack", fmt.Sprintf("%ss#%d", funcNameFull, line))
-		}
-
-		callback(message, args...)
 	}
 }
 
