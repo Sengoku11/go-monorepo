@@ -16,6 +16,57 @@ const (
 	envVal = "123"
 )
 
+func TestCurrent(t *testing.T) {
+	testCases := []struct {
+		name      string
+		env       string
+		expectEnv environment.Environment
+		expectErr error
+	}{
+		{
+			name:      "uppercase",
+			env:       "LOCAL",
+			expectEnv: environment.Local,
+			expectErr: nil,
+		},
+		{
+			name:      "camel case",
+			env:       "PrOd",
+			expectEnv: environment.Prod,
+			expectErr: nil,
+		},
+		{
+			name:      "invalid value",
+			env:       "random",
+			expectEnv: "",
+			expectErr: environment.ErrUnknownEnvironment,
+		},
+		{
+			name:      "caps",
+			env:       "",
+			expectEnv: "",
+			expectErr: environment.ErrEnvironmentNotSet,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			if testCase.env != "" {
+				t.Setenv("ENVIRONMENT", testCase.env)
+			}
+
+			env, err := environment.Current()
+			if !errors.Is(err, testCase.expectErr) {
+				t.Errorf("expected %v error, but got %v", testCase.expectErr, err)
+			}
+
+			if env != testCase.expectEnv {
+				t.Errorf("expected %s env, but got %s", testCase.expectEnv, env)
+			}
+		})
+	}
+}
+
 func TestLoadLocalDotEnv(t *testing.T) {
 	tempDir := t.TempDir()
 	goWorkFile := filepath.Join(tempDir, "go.work")
