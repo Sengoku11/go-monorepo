@@ -3,12 +3,7 @@
 package logger
 
 import (
-	context "context"
-
-	alerter "github.com/Sengoku11/go-monorepo/pkg/alerter"
-
 	logger "github.com/Sengoku11/go-monorepo/pkg/logger"
-
 	mock "github.com/stretchr/testify/mock"
 
 	time "time"
@@ -25,75 +20,6 @@ type MockLogger_Expecter struct {
 
 func (_m *MockLogger) EXPECT() *MockLogger_Expecter {
 	return &MockLogger_Expecter{mock: &_m.Mock}
-}
-
-// AddHook provides a mock function with given fields: hook
-func (_m *MockLogger) AddHook(hook alerter.Alerter) {
-	_m.Called(hook)
-}
-
-// MockLogger_AddHook_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddHook'
-type MockLogger_AddHook_Call struct {
-	*mock.Call
-}
-
-// AddHook is a helper method to define mock.On call
-//   - hook alerter.Alerter
-func (_e *MockLogger_Expecter) AddHook(hook interface{}) *MockLogger_AddHook_Call {
-	return &MockLogger_AddHook_Call{Call: _e.mock.On("AddHook", hook)}
-}
-
-func (_c *MockLogger_AddHook_Call) Run(run func(hook alerter.Alerter)) *MockLogger_AddHook_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(alerter.Alerter))
-	})
-	return _c
-}
-
-func (_c *MockLogger_AddHook_Call) Return() *MockLogger_AddHook_Call {
-	_c.Call.Return()
-	return _c
-}
-
-func (_c *MockLogger_AddHook_Call) RunAndReturn(run func(alerter.Alerter)) *MockLogger_AddHook_Call {
-	_c.Run(run)
-	return _c
-}
-
-// Alert provides a mock function with given fields: ctx, channel, message, payload
-func (_m *MockLogger) Alert(ctx context.Context, channel alerter.Channel, message string, payload map[string]any) {
-	_m.Called(ctx, channel, message, payload)
-}
-
-// MockLogger_Alert_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Alert'
-type MockLogger_Alert_Call struct {
-	*mock.Call
-}
-
-// Alert is a helper method to define mock.On call
-//   - ctx context.Context
-//   - channel alerter.Channel
-//   - message string
-//   - payload map[string]any
-func (_e *MockLogger_Expecter) Alert(ctx interface{}, channel interface{}, message interface{}, payload interface{}) *MockLogger_Alert_Call {
-	return &MockLogger_Alert_Call{Call: _e.mock.On("Alert", ctx, channel, message, payload)}
-}
-
-func (_c *MockLogger_Alert_Call) Run(run func(ctx context.Context, channel alerter.Channel, message string, payload map[string]any)) *MockLogger_Alert_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(alerter.Channel), args[2].(string), args[3].(map[string]any))
-	})
-	return _c
-}
-
-func (_c *MockLogger_Alert_Call) Return() *MockLogger_Alert_Call {
-	_c.Call.Return()
-	return _c
-}
-
-func (_c *MockLogger_Alert_Call) RunAndReturn(run func(context.Context, alerter.Channel, string, map[string]any)) *MockLogger_Alert_Call {
-	_c.Run(run)
-	return _c
 }
 
 // Debug provides a mock function with given fields: message, args

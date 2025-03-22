@@ -4,21 +4,11 @@
 package logger
 
 import (
-	"context"
-	"errors"
 	"time"
-
-	"github.com/Sengoku11/go-monorepo/pkg/alerter"
 )
 
 // AlertTimeout defines how long to wait for alert to be sent.
 const AlertTimeout = time.Second * 2
-
-// Error that is logged at the error level when the alert hook fails.
-var (
-	ErrSendAlert   = errors.New("failed to send alert")
-	ErrSendTimeout = errors.New("failed to send in time")
-)
 
 // LogMethod is alias to Logger methods.
 type LogMethod = func(message string, args ...any)
@@ -48,15 +38,6 @@ type BasicLogger interface {
 	Panic(message string, args ...any)
 }
 
-// Alerter interface.
-type Alerter interface {
-	// AddHook for sending alerts to messengers.
-	AddHook(hook alerter.Alerter)
-
-	// Alert the message to connected hooks.
-	Alert(ctx context.Context, channel alerter.Channel, message string, payload map[string]any)
-}
-
 // Options represent control methods over Logger.
 type Options interface {
 	// EnableDebugMode to log debug messages.
@@ -76,5 +57,4 @@ type Options interface {
 type Logger interface {
 	BasicLogger
 	Options
-	Alerter
 }

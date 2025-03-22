@@ -3,17 +3,11 @@ package zlog
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
-
-	mockalerter "github.com/Sengoku11/go-monorepo/mocks/github.com/Sengoku11/go-monorepo/pkg/alerter"
-	"github.com/Sengoku11/go-monorepo/pkg/alerter"
-	"github.com/Sengoku11/go-monorepo/pkg/logger"
-	"github.com/stretchr/testify/mock"
 )
 
 const (
@@ -30,102 +24,6 @@ func newTestLogger() (*Logger, *bytes.Buffer) {
 	*l.logger = l.logger.Output(&buf)
 
 	return l, &buf
-}
-
-func TestAlert(t *testing.T) {
-	t.Parallel()
-
-	mockAlert := mockalerter.NewMockAlerter(t)
-	expectedPayload := map[string]any{testKey1: testVal1}
-
-	mockAlert.
-		EXPECT().
-		Alert(mock.Anything, alerter.Test, testMessage, expectedPayload).
-		Return(nil)
-
-	log, _ := newTestLogger()
-
-	// Add two "different" alerters
-	log.AddHook(mockAlert)
-	log.AddHook(mockAlert)
-	log.Alert(t.Context(), alerter.Test, testMessage, expectedPayload)
-
-	mockAlert.AssertNumberOfCalls(t, "Alert", 2)
-}
-
-func TestAlert_NotCalled(t *testing.T) {
-	t.Parallel()
-
-	mockAlert := mockalerter.NewMockAlerter(t)
-	expectedPayload := map[string]any{testKey1: testVal1}
-
-	log, _ := newTestLogger()
-
-	// Alert without any hook
-	log.Alert(t.Context(), alerter.Test, testMessage, expectedPayload)
-
-	mockAlert.AssertNumberOfCalls(t, "Alert", 0)
-}
-
-func TestAlert_Errors(t *testing.T) {
-	t.Parallel()
-
-	testCases := []struct {
-		name             string
-		returnedError    error
-		expectedLogMsg   string
-		expectedErrorSub string
-	}{
-		{
-			name:             "timeout",
-			returnedError:    context.DeadlineExceeded,
-			expectedLogMsg:   logger.ErrSendTimeout.Error(),
-			expectedErrorSub: fmt.Sprintf(`"error":"%s"`, context.DeadlineExceeded),
-		},
-		{
-			name:             "canceled",
-			returnedError:    context.Canceled,
-			expectedLogMsg:   logger.ErrSendAlert.Error(),
-			expectedErrorSub: fmt.Sprintf(`"error":"%s"`, context.Canceled),
-		},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			t.Parallel()
-
-			expectedChannel := alerter.Test
-			expectedPayload := map[string]any{testKey1: testVal1}
-
-			log, buf := newTestLogger()
-			mockAlert := mockalerter.NewMockAlerter(t)
-			mockAlert.
-				On("Alert", mock.Anything, expectedChannel, testMessage, expectedPayload).
-				Return(testCase.returnedError).
-				Once()
-
-			log.AddHook(mockAlert)
-			log.Alert(t.Context(), expectedChannel, testMessage, expectedPayload)
-
-			out := buf.String()
-
-			expectedSubstrings := []string{
-				`"level":"error"`,
-				testCase.expectedErrorSub,
-				fmt.Sprintf(`"msg":"%s"`, testMessage),
-				fmt.Sprintf(`"message":"%s"`, testCase.expectedLogMsg),
-				fmt.Sprintf(`"channel":"%s"`, expectedChannel),
-			}
-
-			for _, substr := range expectedSubstrings {
-				if !strings.Contains(out, substr) {
-					t.Errorf("expected log output to contain %s, got %q", substr, out)
-				}
-			}
-
-			mockAlert.AssertNumberOfCalls(t, "Alert", 1)
-		})
-	}
 }
 
 func TestZerologLogger(t *testing.T) {
@@ -181,6 +79,8 @@ func TestZerologLogger(t *testing.T) {
 					t.Errorf("expected log output to contain %s, got %q", substr, out)
 				}
 			}
+
+			t.Logf("result output for %s:\n %s\n", testCase.level, out)
 		})
 	}
 }

@@ -2,11 +2,8 @@
 package zlog
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"runtime"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -117,44 +114,6 @@ func (l *Logger) WithCallStack(callback logger.LogMethod) logger.LogMethod {
 		}
 
 		callback(message, args...)
-	}
-}
-
-// AddHook for sending alerts to messengers.
-func (l *Logger) AddHook(hook alerter.Alerter) {
-	l.hooks = append(l.hooks, hook)
-}
-
-// Alert the message to connected hooks.
-func (l *Logger) Alert(ctx context.Context, channel alerter.Channel, message string, payload map[string]any) {
-	timeoutCtx, cancel := context.WithTimeout(ctx, logger.AlertTimeout)
-	defer cancel()
-
-	var wg sync.WaitGroup
-	for _, hook := range l.hooks {
-		wg.Add(1)
-
-		go func(h alerter.Alerter) {
-			defer wg.Done()
-
-			err := h.Alert(timeoutCtx, channel, message, payload)
-			if errors.Is(err, context.DeadlineExceeded) {
-				l.Error(logger.ErrSendTimeout.Error(), "error", err.Error(), "channel", channel, "msg", message)
-			} else if err != nil {
-				l.Error(logger.ErrSendAlert.Error(), "error", err.Error(), "channel", channel, "msg", message)
-			}
-		}(hook)
-	}
-
-	wgChan := make(chan any)
-	go func() {
-		wg.Wait()
-		close(wgChan)
-	}()
-
-	select {
-	case <-ctx.Done():
-	case <-wgChan:
 	}
 }
 

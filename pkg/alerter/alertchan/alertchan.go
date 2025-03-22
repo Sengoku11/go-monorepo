@@ -1,4 +1,5 @@
-package alerter
+// Package alertchan contains alert channels and related methods to retrieve channel name.
+package alertchan
 
 import (
 	"errors"
