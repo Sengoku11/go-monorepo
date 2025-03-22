@@ -23,9 +23,10 @@ type Logger struct {
 }
 
 // New creates a new instance of Logger.
-func New() *Logger {
-	consoleWriter := zerolog.NewConsoleWriter()
+func New(options ...func(w *zerolog.ConsoleWriter)) *Logger {
+	consoleWriter := zerolog.NewConsoleWriter(options...)
 	consoleWriter.TimeFormat = time.DateTime
+
 	log := zerolog.New(consoleWriter).With().Timestamp().Logger()
 
 	return &Logger{

@@ -1,5 +1,4 @@
-//nolint:testpackage
-package zlog
+package zlog_test
 
 import (
 	"bytes"
@@ -8,6 +7,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Sengoku11/go-monorepo/pkg/logger/zlog"
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -17,44 +19,43 @@ const (
 )
 
 // newTestLogger creates a Logger that writes to a bytes.Buffer.
-func newTestLogger() (*Logger, *bytes.Buffer) {
+func newTestLogger() (*zlog.Logger, *bytes.Buffer) {
 	var buf bytes.Buffer
 
-	l := New()
-	*l.logger = l.logger.Output(&buf)
-
-	return l, &buf
+	return zlog.New(func(w *zerolog.ConsoleWriter) {
+		w.Out = &buf
+		w.NoColor = true
+	}), &buf
 }
 
 func TestZerologLogger(t *testing.T) {
 	t.Parallel()
 
 	expectedSubstrings := []string{
-		fmt.Sprintf(`"message":"%s"`, testMessage),
-		fmt.Sprintf(`"%s":"%s"`, testKey1, testVal1),
-		fmt.Sprintf(`"%s":"%s"`, testKey2, testVal2),
-		fmt.Sprintf(`"%s":"%s"`, testKey3, testVal3),
+		fmt.Sprintf(`%s=%s`, testKey1, testVal1),
+		fmt.Sprintf(`%s=%s`, testKey2, testVal2),
+		fmt.Sprintf(`%s=%s`, testKey3, testVal3),
 	}
 
 	testCases := []struct {
 		level   string
-		logFunc func(l *Logger)
+		logFunc func(l *zlog.Logger)
 	}{
 		{
-			level: "info",
-			logFunc: func(l *Logger) {
+			level: "INF",
+			logFunc: func(l *zlog.Logger) {
 				l.Info(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
 			},
 		},
 		{
-			level: "warn",
-			logFunc: func(l *Logger) {
+			level: "WRN",
+			logFunc: func(l *zlog.Logger) {
 				l.Warn(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
 			},
 		},
 		{
-			level: "error",
-			logFunc: func(l *Logger) {
+			level: "ERR",
+			logFunc: func(l *zlog.Logger) {
 				l.Error(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
 			},
 		},
@@ -68,9 +69,9 @@ func TestZerologLogger(t *testing.T) {
 			testCase.logFunc(log)
 
 			out := buf.String()
-			expectedLevel := fmt.Sprintf(`"level":"%s"`, testCase.level)
+			expectedMessage := fmt.Sprintf(`%s %s`, testCase.level, testMessage)
 
-			if !strings.Contains(out, expectedLevel) {
+			if !strings.Contains(out, expectedMessage) {
 				t.Errorf("expected log to contain level %q, got %q", testCase.level, out)
 			}
 
@@ -91,11 +92,10 @@ func TestZerologLogger_Panic(t *testing.T) {
 	log, buf := newTestLogger()
 
 	expectedSubstrings := []string{
-		`"level":"panic"`,
-		fmt.Sprintf(`"message":"%s"`, testMessage),
-		fmt.Sprintf(`"%s":"%s"`, testKey1, testVal1),
-		fmt.Sprintf(`"%s":"%s"`, testKey2, testVal2),
-		fmt.Sprintf(`"%s":"%s"`, testKey3, testVal3),
+		"PNC " + testMessage,
+		fmt.Sprintf(`%s=%s`, testKey1, testVal1),
+		fmt.Sprintf(`%s=%s`, testKey2, testVal2),
+		fmt.Sprintf(`%s=%s`, testKey3, testVal3),
 	}
 
 	defer func() {
@@ -133,11 +133,10 @@ func TestZerologLogger_EnableDebugMode(t *testing.T) {
 	log, buf := newTestLogger()
 
 	expectedSubstrings := []string{
-		`"level":"debug"`,
-		fmt.Sprintf(`"message":"%s"`, testMessage),
-		fmt.Sprintf(`"%s":"%s"`, testKey1, testVal1),
-		fmt.Sprintf(`"%s":"%s"`, testKey2, testVal2),
-		fmt.Sprintf(`"%s":"%s"`, testKey3, testVal3),
+		"DBG " + testMessage,
+		fmt.Sprintf(`%s=%s`, testKey1, testVal1),
+		fmt.Sprintf(`%s=%s`, testKey2, testVal2),
+		fmt.Sprintf(`%s=%s`, testKey3, testVal3),
 	}
 
 	log.EnableDebugMode()
@@ -217,11 +216,10 @@ func TestZerologLogger_WithCallStack(t *testing.T) {
 	log, buf := newTestLogger()
 
 	expectedSubstrings := []string{
-		`"level":"info"`,
-		fmt.Sprintf(`"message":"%s"`, testMessage),
-		fmt.Sprintf(`"%s":"%s"`, testKey1, testVal1),
-		fmt.Sprintf(`"%s":"%s"`, testKey2, testVal2),
-		fmt.Sprintf(`"%s":"%s"`, testKey3, testVal3),
+		"INF " + testMessage,
+		fmt.Sprintf(`%s=%s`, testKey1, testVal1),
+		fmt.Sprintf(`%s=%s`, testKey2, testVal2),
+		fmt.Sprintf(`%s=%s`, testKey3, testVal3),
 	}
 
 	info := log.WithCallStack(log.Info)
@@ -236,7 +234,7 @@ func TestZerologLogger_WithCallStack(t *testing.T) {
 
 	// Using a regular expression to check that the stack field contains the function name.
 	// This regex looks for "stack":"<anything>TestZerologLogger_WithCallStack<anything>"
-	re := regexp.MustCompile(`"stack":"[^"]*TestZerologLogger_WithCallStack[^"]*"`)
+	re := regexp.MustCompile(`stack=.*TestZerologLogger_WithCallStack[^#]*`)
 	if !re.MatchString(out) {
 		t.Errorf("expected stack field to contain function name TestZerologLogger_WithCallStack, got %q", out)
 	}
