@@ -234,8 +234,10 @@ func TestZerologLogger_WithCallStack(t *testing.T) {
 
 	// Using a regular expression to check that the stack field contains the function name.
 	// This regex looks for "stack":"<anything>TestZerologLogger_WithCallStack<anything>"
-	re := regexp.MustCompile(`stack=.*TestZerologLogger_WithCallStack[^#]*`)
+	re := regexp.MustCompile(`stack=.*{"file":".*","func":".*TestZerologLogger_WithCallStack","line":"\d+"}.*`)
 	if !re.MatchString(out) {
 		t.Errorf("expected stack field to contain function name TestZerologLogger_WithCallStack, got %q", out)
 	}
+
+	t.Logf("result:\n %s", out)
 }

@@ -2,8 +2,8 @@
 package zlog
 
 import (
-	"fmt"
 	"runtime"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -105,14 +105,36 @@ func (l *Logger) WithRateLim(cooldown time.Duration, callback logger.LogMethod) 
 	}
 }
 
-// WithCallStack adds a call stack to the log.
+// WithCallStack adds a call stack to the log. Each object in the slice has the keys: "func", "file", and "line".
+//
+//	Example: "stack": [{"func":"main.someFunc","file":"/path/to/file.go","line":42},...]
 func (l *Logger) WithCallStack(callback logger.LogMethod) logger.LogMethod {
 	return func(message string, args ...any) {
-		if pc, _, line, ok := runtime.Caller(1); ok {
-			funcNameFull := runtime.FuncForPC(pc).Name()
+		const (
+			skipFrames  = 2
+			optimalSize = 10
+		)
 
-			args = append(args, "stack", fmt.Sprintf("%ss#%d", funcNameFull, line))
+		pcs := make([]uintptr, optimalSize)
+		n := runtime.Callers(skipFrames, pcs)
+		frames := runtime.CallersFrames(pcs[:n])
+
+		stack := make([]map[string]string, 0, optimalSize)
+
+		for {
+			frame, more := frames.Next()
+			stack = append(stack, map[string]string{
+				"file": frame.File,
+				"func": frame.Function,
+				"line": strconv.Itoa(frame.Line),
+			})
+
+			if !more {
+				break
+			}
 		}
+
+		args = append(args, "stack", stack)
 
 		callback(message, args...)
 	}

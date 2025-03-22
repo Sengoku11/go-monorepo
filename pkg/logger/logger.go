@@ -50,6 +50,7 @@ type Options interface {
 	WithRateLim(cooldown time.Duration, cb LogMethod) LogMethod
 
 	// WithCallStack adds call stack to the log.
+	//	Example: "stack": [{"func":"main.someFunc","file":"/path/to/file.go","line":42},...]
 	WithCallStack(cb LogMethod) LogMethod
 }
 
