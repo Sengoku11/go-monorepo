@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/Sengoku11/go-monorepo/pkg/loadenv"
+	"github.com/Sengoku11/go-monorepo/pkg/environment"
 	"github.com/Sengoku11/go-monorepo/pkg/logger/zlog"
 )
 
@@ -18,7 +18,7 @@ import (
 func Default() (context.Context, context.CancelCauseFunc, *zlog.Logger) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
-	if err := loadenv.Local(); err != nil {
+	if err := environment.LoadLocalDotEnv(); err != nil {
 		stop()
 		panic("cannot start locally: " + err.Error())
 	}

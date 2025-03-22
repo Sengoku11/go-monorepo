@@ -7,9 +7,9 @@ use (
 	./mocks
 	./pkg/alerter
 	./pkg/bootstrap
+	./pkg/environment
 	./pkg/errcode
 	./pkg/fflag
-	./pkg/loadenv
 	./pkg/logger
 	./pkg/middleware
 	./pkg/ratelim
