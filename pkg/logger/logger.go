@@ -7,9 +7,6 @@ import (
 	"time"
 )
 
-// AlertTimeout defines how long to wait for alert to be sent.
-const AlertTimeout = time.Second * 2
-
 // LogMethod is alias to Logger methods.
 type LogMethod = func(message string, args ...any)
 

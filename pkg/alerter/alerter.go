@@ -4,10 +4,13 @@ package alerter
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/alertchan"
-	"github.com/Sengoku11/go-monorepo/pkg/logger"
 )
+
+// AlertTimeout defines how long to wait for alert to be sent.
+const AlertTimeout = time.Second * 2
 
 // Alerter defines the interface of alerter used in Client hooks.
 type Alerter interface {
@@ -30,9 +33,9 @@ func New(hooks ...Alerter) *Client {
 	}
 }
 
-// Alert the message to connected hooks.
+// Alert the message to hooked Alerter with AlertTimeout to complete.
 func (a *Client) Alert(ctx context.Context, channel alertchan.Channel, message string, payload map[string]any) {
-	timeoutCtx, cancel := context.WithTimeout(ctx, logger.AlertTimeout)
+	timeoutCtx, cancel := context.WithTimeout(ctx, AlertTimeout)
 	defer cancel()
 
 	var wg sync.WaitGroup
@@ -48,14 +51,14 @@ func (a *Client) Alert(ctx context.Context, channel alertchan.Channel, message s
 		}(hook)
 	}
 
-	wgChan := make(chan any)
+	done := make(chan struct{})
 	go func() {
 		wg.Wait()
-		close(wgChan)
+		close(done)
 	}()
 
 	select {
 	case <-ctx.Done():
-	case <-wgChan:
+	case <-done:
 	}
 }
