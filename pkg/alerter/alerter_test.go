@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	testMessage                  = "Hello World"
-	testKey1, testKey2, testKey3 = "hello_1", "hello_2", "hello_3"
-	testVal1, testVal2, testVal3 = "world_1", "world_2", "world_3"
+	testMessage = "Hello World"
+	testKey1    = "hello_1"
+	testVal1    = "world_1"
 )
 
-func newTestLogger() *alerter.Client {
-	return alerter.New()
+func newTestLogger(hooks ...alerter.Alerter) *alerter.Client {
+	return alerter.New(hooks...)
 }
 
 func TestAlert(t *testing.T) {
@@ -31,11 +31,9 @@ func TestAlert(t *testing.T) {
 		Alert(mock.Anything, alertchan.Test, testMessage, expectedPayload).
 		Return(nil)
 
-	alert := newTestLogger()
-
 	// Add two "different" alerters
-	alert.AddHook(mockAlert)
-	alert.AddHook(mockAlert)
+	alert := newTestLogger(mockAlert, mockAlert)
+
 	alert.Alert(t.Context(), alertchan.Test, testMessage, expectedPayload)
 
 	mockAlert.AssertNumberOfCalls(t, "Alert", 2)
@@ -79,7 +77,6 @@ func TestAlert_Errors(t *testing.T) {
 			expectedChannel := alertchan.Test
 			expectedPayload := map[string]any{testKey1: testVal1}
 
-			alert := newTestLogger()
 			mockAlert := mockalerter.NewMockAlerter(t)
 			mockAlert.
 				On("Alert", mock.Anything, expectedChannel, testMessage, expectedPayload).
@@ -91,7 +88,7 @@ func TestAlert_Errors(t *testing.T) {
 				HandleError(testCase.returnedError, testMessage, expectedPayload).
 				Once()
 
-			alert.AddHook(mockAlert)
+			alert := newTestLogger(mockAlert)
 			alert.Alert(t.Context(), expectedChannel, testMessage, expectedPayload)
 
 			mockAlert.AssertNumberOfCalls(t, "Alert", 1)

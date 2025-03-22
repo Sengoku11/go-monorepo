@@ -14,12 +14,12 @@ func main() {
 	ctx, cancel, log := bootstrap.Default()
 	defer cancel(nil)
 
-	alert := alerter.New()
-	if slackAlerter, err := slack.New(log); err == nil {
-		alert.AddHook(slackAlerter)
-	} else {
+	slackAlerter, err := slack.New(log)
+	if err != nil {
 		log.Panic("cannot create slack alerter", "error", err)
 	}
+
+	alert := alerter.New(slackAlerter)
 
 	alert.Alert(ctx, alertchan.Test, "this is alert", map[string]any{"key1": "value1"})
 	alert.Alert(ctx, alertchan.Test, "this is alert", map[string]any{"key2": "value2"})
