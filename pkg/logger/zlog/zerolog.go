@@ -8,7 +8,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Sengoku11/go-monorepo/pkg/alerter"
 	"github.com/Sengoku11/go-monorepo/pkg/logger"
 	"github.com/Sengoku11/go-monorepo/pkg/ratelim"
 	"github.com/rs/zerolog"
@@ -18,7 +17,6 @@ import (
 // It leverages zero-allocation for efficient, structured logging.
 type Logger struct {
 	logger  *zerolog.Logger
-	hooks   []alerter.Alerter
 	debug   *atomic.Bool
 	msgByTS *ratelim.MessageByTS
 }
@@ -33,7 +31,6 @@ func New(options ...func(w *zerolog.ConsoleWriter)) *Logger {
 	return &Logger{
 		logger:  &log,
 		debug:   new(atomic.Bool),
-		hooks:   []alerter.Alerter{},
 		msgByTS: ratelim.NewMap(),
 	}
 }
