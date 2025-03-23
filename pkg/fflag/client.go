@@ -72,7 +72,7 @@ func (c *Client) fetchBooleanValue(ctx context.Context, flag BooleanFlag) (bool,
 		// c.log.Alert(ctx, alerter.FlagError, msg, map[string]any{"error": err.Error()})
 
 		//nolint:mnd
-		logErr := c.log.WithRateLim(10*time.Minute, c.log.Error)
+		logErr := c.log.WithRateLimit(10*time.Minute, c.log.Error)
 		logErr(msg, "error", err.Error())
 
 		return flag.DefaultValue, fmt.Errorf("%s: %w", msg, err)

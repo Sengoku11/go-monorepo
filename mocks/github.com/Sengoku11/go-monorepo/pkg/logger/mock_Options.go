@@ -70,12 +70,12 @@ func (_c *MockOptions_WithCallStack_Call) RunAndReturn(run func(logger.LogMethod
 	return _c
 }
 
-// WithRateLim provides a mock function with given fields: cooldown, cb
-func (_m *MockOptions) WithRateLim(cooldown time.Duration, cb logger.LogMethod) logger.LogMethod {
+// WithRateLimit provides a mock function with given fields: cooldown, cb
+func (_m *MockOptions) WithRateLimit(cooldown time.Duration, cb logger.LogMethod) logger.LogMethod {
 	ret := _m.Called(cooldown, cb)
 
 	if len(ret) == 0 {
-		panic("no return value specified for WithRateLim")
+		panic("no return value specified for WithRateLimit")
 	}
 
 	var r0 logger.LogMethod
@@ -90,31 +90,31 @@ func (_m *MockOptions) WithRateLim(cooldown time.Duration, cb logger.LogMethod) 
 	return r0
 }
 
-// MockOptions_WithRateLim_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'WithRateLim'
-type MockOptions_WithRateLim_Call struct {
+// MockOptions_WithRateLimit_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'WithRateLimit'
+type MockOptions_WithRateLimit_Call struct {
 	*mock.Call
 }
 
-// WithRateLim is a helper method to define mock.On call
+// WithRateLimit is a helper method to define mock.On call
 //   - cooldown time.Duration
 //   - cb logger.LogMethod
-func (_e *MockOptions_Expecter) WithRateLim(cooldown interface{}, cb interface{}) *MockOptions_WithRateLim_Call {
-	return &MockOptions_WithRateLim_Call{Call: _e.mock.On("WithRateLim", cooldown, cb)}
+func (_e *MockOptions_Expecter) WithRateLimit(cooldown interface{}, cb interface{}) *MockOptions_WithRateLimit_Call {
+	return &MockOptions_WithRateLimit_Call{Call: _e.mock.On("WithRateLimit", cooldown, cb)}
 }
 
-func (_c *MockOptions_WithRateLim_Call) Run(run func(cooldown time.Duration, cb logger.LogMethod)) *MockOptions_WithRateLim_Call {
+func (_c *MockOptions_WithRateLimit_Call) Run(run func(cooldown time.Duration, cb logger.LogMethod)) *MockOptions_WithRateLimit_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(time.Duration), args[1].(logger.LogMethod))
 	})
 	return _c
 }
 
-func (_c *MockOptions_WithRateLim_Call) Return(_a0 logger.LogMethod) *MockOptions_WithRateLim_Call {
+func (_c *MockOptions_WithRateLimit_Call) Return(_a0 logger.LogMethod) *MockOptions_WithRateLimit_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *MockOptions_WithRateLim_Call) RunAndReturn(run func(time.Duration, logger.LogMethod) logger.LogMethod) *MockOptions_WithRateLim_Call {
+func (_c *MockOptions_WithRateLimit_Call) RunAndReturn(run func(time.Duration, logger.LogMethod) logger.LogMethod) *MockOptions_WithRateLimit_Call {
 	_c.Call.Return(run)
 	return _c
 }

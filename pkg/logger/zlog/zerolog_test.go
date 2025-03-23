@@ -190,7 +190,7 @@ func TestZerologLogger_WithRateLim(t *testing.T) {
 	runs := 10
 	expectedLogs := runs + 1
 
-	info := log.WithRateLim(time.Minute, log.Info)
+	info := log.WithRateLimit(time.Minute, log.Info)
 	// Should log just once.
 	for range runs {
 		info(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
