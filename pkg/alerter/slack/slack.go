@@ -74,7 +74,7 @@ func (a *Alerter) AlertWithRateLimit(
 
 // Alert given event to the Slack channel.
 func (a *Alerter) Alert(ctx context.Context, suffix alertchan.Channel, message string, payload map[string]any) error {
-	channel, err := alertchan.FromENV("SLACK", suffix)
+	channel, err := alertchan.FromEnv("SLACK", suffix)
 	if err != nil {
 		return fmt.Errorf(`SLACK_* env is not defined: %w`, err)
 	}

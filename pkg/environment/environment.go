@@ -43,7 +43,7 @@ var (
 	ErrUnknownEnvironment = errors.New("unknown environment")
 )
 
-// Current returns Environment specified in ENV.
+// Current returns Environment specified in env.
 func Current() (Environment, error) {
 	env, exists := os.LookupEnv("ENVIRONMENT")
 	if !exists {
