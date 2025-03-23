@@ -14,3 +14,15 @@ packages:
   github.com/Sengoku11/go-monorepo/pkg/fflag:
     config:
       all: true
+  github.com/Sengoku11/go-monorepo/pkg/errcode:
+    config:
+      all: true
+  github.com/Sengoku11/go-monorepo/pkg/environment:
+    config:
+      all: true
+  github.com/Sengoku11/go-monorepo/pkg/bootstrap:
+    config:
+      all: true
+  github.com/Sengoku11/go-monorepo/pkg/ratelim:
+    config:
+      all: true
