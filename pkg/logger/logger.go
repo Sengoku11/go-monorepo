@@ -19,9 +19,6 @@ type BasicLogger interface {
 	//	log.Info("hello", "someKey", "string value").
 	Info(message string, args ...any)
 
-	// Debug logs a message at the info level if env "DEBUG" is set to true.
-	Debug(message string, args ...any)
-
 	// Warn logs a message at the warn level.
 	Warn(message string, args ...any)
 
@@ -33,16 +30,19 @@ type BasicLogger interface {
 
 	// Panic logs a message at the panic level and then panics, which stops the ordinary flow of a goroutine.
 	Panic(message string, args ...any)
-}
 
-// Options represent control methods over Logger.
-type Options interface {
+	// Debug logs a message at the debug level if debug mode is enabled.
+	Debug(message string, args ...any)
+
 	// EnableDebugMode to log debug messages.
 	EnableDebugMode()
 
 	// DisableDebugMode to avoid spamming debug messages.
 	DisableDebugMode()
+}
 
+// Options for logging.
+type Options interface {
 	// WithRateLim applies rate limiting based on the message hash.
 	WithRateLim(cooldown time.Duration, cb LogMethod) LogMethod
 

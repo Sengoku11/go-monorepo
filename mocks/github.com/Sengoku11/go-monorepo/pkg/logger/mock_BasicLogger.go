@@ -61,6 +61,70 @@ func (_c *MockBasicLogger_Debug_Call) RunAndReturn(run func(string, ...any)) *Mo
 	return _c
 }
 
+// DisableDebugMode provides a mock function with no fields
+func (_m *MockBasicLogger) DisableDebugMode() {
+	_m.Called()
+}
+
+// MockBasicLogger_DisableDebugMode_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DisableDebugMode'
+type MockBasicLogger_DisableDebugMode_Call struct {
+	*mock.Call
+}
+
+// DisableDebugMode is a helper method to define mock.On call
+func (_e *MockBasicLogger_Expecter) DisableDebugMode() *MockBasicLogger_DisableDebugMode_Call {
+	return &MockBasicLogger_DisableDebugMode_Call{Call: _e.mock.On("DisableDebugMode")}
+}
+
+func (_c *MockBasicLogger_DisableDebugMode_Call) Run(run func()) *MockBasicLogger_DisableDebugMode_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockBasicLogger_DisableDebugMode_Call) Return() *MockBasicLogger_DisableDebugMode_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockBasicLogger_DisableDebugMode_Call) RunAndReturn(run func()) *MockBasicLogger_DisableDebugMode_Call {
+	_c.Run(run)
+	return _c
+}
+
+// EnableDebugMode provides a mock function with no fields
+func (_m *MockBasicLogger) EnableDebugMode() {
+	_m.Called()
+}
+
+// MockBasicLogger_EnableDebugMode_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'EnableDebugMode'
+type MockBasicLogger_EnableDebugMode_Call struct {
+	*mock.Call
+}
+
+// EnableDebugMode is a helper method to define mock.On call
+func (_e *MockBasicLogger_Expecter) EnableDebugMode() *MockBasicLogger_EnableDebugMode_Call {
+	return &MockBasicLogger_EnableDebugMode_Call{Call: _e.mock.On("EnableDebugMode")}
+}
+
+func (_c *MockBasicLogger_EnableDebugMode_Call) Run(run func()) *MockBasicLogger_EnableDebugMode_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockBasicLogger_EnableDebugMode_Call) Return() *MockBasicLogger_EnableDebugMode_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockBasicLogger_EnableDebugMode_Call) RunAndReturn(run func()) *MockBasicLogger_EnableDebugMode_Call {
+	_c.Run(run)
+	return _c
+}
+
 // Error provides a mock function with given fields: message, args
 func (_m *MockBasicLogger) Error(message string, args ...any) {
 	var _ca []interface{}
