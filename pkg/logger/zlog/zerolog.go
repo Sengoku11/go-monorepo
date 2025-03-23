@@ -2,6 +2,7 @@
 package zlog
 
 import (
+	"os"
 	"runtime"
 	"strconv"
 	"sync/atomic"
@@ -55,6 +56,9 @@ func (l *Logger) Error(message string, args ...any) {
 // Fatal logs a message at the fatal level and terminates the app with os.Exit(1).
 func (l *Logger) Fatal(message string, args ...any) {
 	l.logger.Fatal().Fields(args).Msg(message)
+
+	// To ensure it will exit
+	os.Exit(1)
 }
 
 // Panic logs a message at the panic level and then panics, which stops the ordinary flow of a goroutine.

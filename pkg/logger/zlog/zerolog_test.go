@@ -28,7 +28,7 @@ func newTestLogger() (*zlog.Logger, *bytes.Buffer) {
 	}), &buf
 }
 
-func TestZerologLogger(t *testing.T) {
+func TestLogger(t *testing.T) {
 	t.Parallel()
 
 	expectedSubstrings := []string{
@@ -86,7 +86,7 @@ func TestZerologLogger(t *testing.T) {
 	}
 }
 
-func TestZerologLogger_Panic(t *testing.T) {
+func TestLogger_Panic(t *testing.T) {
 	t.Parallel()
 
 	log, buf := newTestLogger()
@@ -114,7 +114,7 @@ func TestZerologLogger_Panic(t *testing.T) {
 	log.Panic(testMessage, testKey1, testVal1, testKey2, testVal2, testKey3, testVal3)
 }
 
-func TestZerologLogger_Debug(t *testing.T) {
+func TestLogger_Debug(t *testing.T) {
 	t.Parallel()
 
 	log, buf := newTestLogger()
@@ -127,7 +127,7 @@ func TestZerologLogger_Debug(t *testing.T) {
 	}
 }
 
-func TestZerologLogger_EnableDebugMode(t *testing.T) {
+func TestLogger_EnableDebugMode(t *testing.T) {
 	t.Parallel()
 
 	log, buf := newTestLogger()
@@ -150,7 +150,7 @@ func TestZerologLogger_EnableDebugMode(t *testing.T) {
 	}
 }
 
-func TestZerologLogger_DisableDebugMode(t *testing.T) {
+func TestLogger_DisableDebugMode(t *testing.T) {
 	t.Parallel()
 
 	log, buf := newTestLogger()
@@ -164,7 +164,7 @@ func TestZerologLogger_DisableDebugMode(t *testing.T) {
 	}
 }
 
-func TestZerologLogger_WithoutRateLim(t *testing.T) {
+func TestLogger_WithoutRateLim(t *testing.T) {
 	t.Parallel()
 
 	log, buf := newTestLogger()
@@ -183,7 +183,7 @@ func TestZerologLogger_WithoutRateLim(t *testing.T) {
 	}
 }
 
-func TestZerologLogger_WithRateLim(t *testing.T) {
+func TestLogger_WithRateLim(t *testing.T) {
 	t.Parallel()
 
 	log, buf := newTestLogger()
@@ -210,7 +210,7 @@ func TestZerologLogger_WithRateLim(t *testing.T) {
 	}
 }
 
-func TestZerologLogger_WithCallStack(t *testing.T) {
+func TestLogger_WithCallStack(t *testing.T) {
 	t.Parallel()
 
 	log, buf := newTestLogger()
@@ -233,10 +233,10 @@ func TestZerologLogger_WithCallStack(t *testing.T) {
 	}
 
 	// Using a regular expression to check that the stack field contains the function name.
-	// This regex looks for "stack":"<anything>TestZerologLogger_WithCallStack<anything>"
-	re := regexp.MustCompile(`stack=.*{"file":".*","func":".*TestZerologLogger_WithCallStack","line":"\d+"}.*`)
+	// This regex looks for "stack":"<anything>TestLogger_WithCallStack<anything>"
+	re := regexp.MustCompile(`stack=.*{"file":".*","func":".*TestLogger_WithCallStack","line":"\d+"}.*`)
 	if !re.MatchString(out) {
-		t.Errorf("expected stack field to contain function name TestZerologLogger_WithCallStack, got %q", out)
+		t.Errorf("expected stack field to contain function name TestLogger_WithCallStack, got %q", out)
 	}
 
 	t.Logf("result:\n %s", out)
