@@ -31,13 +31,16 @@ type BasicLogger interface {
 	// Panic logs a message at the panic level and then panics, which stops the ordinary flow of a goroutine.
 	Panic(message string, args ...any)
 
-	// Debug logs a message at the debug level if debug mode is enabled.
+	// Debug logs a message at the debug level.
 	Debug(message string, args ...any)
+}
 
-	// EnableDebugMode to log debug messages.
+// Controls that change the BasicLogger state.
+type Controls interface {
+	// EnableDebugMode to allow BasicLogger.Debug messages.
 	EnableDebugMode()
 
-	// DisableDebugMode to avoid spamming debug messages.
+	// DisableDebugMode to prevent BasicLogger.Debug messages.
 	DisableDebugMode()
 }
 
@@ -54,5 +57,6 @@ type Options interface {
 // Logger represents an extended interface of logging options and methods.
 type Logger interface {
 	BasicLogger
+	Controls
 	Options
 }
