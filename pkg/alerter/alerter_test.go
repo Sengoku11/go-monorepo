@@ -24,17 +24,22 @@ func TestAlert(t *testing.T) {
 	t.Parallel()
 
 	mockAlert := mockalerter.NewMockAlerter(t)
-	expectedPayload := map[string]any{testKey1: testVal1}
+
+	expectedEvent := alerter.Event{
+		Chan: alertchan.Test,
+		Msg:  testMessage,
+		Args: map[string]any{testKey1: testVal1},
+	}
 
 	mockAlert.
 		EXPECT().
-		Alert(mock.Anything, alertchan.Test, testMessage, expectedPayload).
+		Alert(mock.Anything, expectedEvent).
 		Return(nil)
 
 	// Add two "different" alerters
 	alert := newTestLogger(mockAlert, mockAlert)
 
-	alert.Alert(t.Context(), alertchan.Test, testMessage, expectedPayload)
+	alert.Alert(t.Context(), expectedEvent)
 
 	mockAlert.AssertNumberOfCalls(t, "Alert", 2)
 }
@@ -43,18 +48,28 @@ func TestAlert_NotCalled(t *testing.T) {
 	t.Parallel()
 
 	mockAlert := mockalerter.NewMockAlerter(t)
-	expectedPayload := map[string]any{testKey1: testVal1}
-
 	alert := newTestLogger()
 
+	expectedEvent := alerter.Event{
+		Chan: alertchan.Test,
+		Msg:  testMessage,
+		Args: map[string]any{testKey1: testVal1},
+	}
+
 	// Alert without any hook
-	alert.Alert(t.Context(), alertchan.Test, testMessage, expectedPayload)
+	alert.Alert(t.Context(), expectedEvent)
 
 	mockAlert.AssertNumberOfCalls(t, "Alert", 0)
 }
 
 func TestAlert_Errors(t *testing.T) {
 	t.Parallel()
+
+	expectedEvent := alerter.Event{
+		Chan: alertchan.Test,
+		Msg:  testMessage,
+		Args: map[string]any{testKey1: testVal1},
+	}
 
 	testCases := []struct {
 		name          string
@@ -74,22 +89,19 @@ func TestAlert_Errors(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			expectedChannel := alertchan.Test
-			expectedPayload := map[string]any{testKey1: testVal1}
-
 			mockAlert := mockalerter.NewMockAlerter(t)
 			mockAlert.
-				On("Alert", mock.Anything, expectedChannel, testMessage, expectedPayload).
+				On("Alert", mock.Anything, expectedEvent).
 				Return(testCase.returnedError).
 				Once()
 
 			mockAlert.
 				EXPECT().
-				HandleError(testCase.returnedError, testMessage, expectedPayload).
+				HandleError(testCase.returnedError, expectedEvent).
 				Once()
 
 			alert := newTestLogger(mockAlert)
-			alert.Alert(t.Context(), expectedChannel, testMessage, expectedPayload)
+			alert.Alert(t.Context(), expectedEvent)
 
 			mockAlert.AssertNumberOfCalls(t, "Alert", 1)
 		})

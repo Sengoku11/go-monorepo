@@ -18,7 +18,7 @@ type Channel string
 // By convention, the constant's value should begin with an underscore (e.g., _ENV_NAME).
 //
 //	Example
-//	- Constant: const Error Channel = "_ERROR"
+//	- Constant: const Error Chan = "_ERROR"
 //	- Env     : SLACK_ERROR='account-microservice-errors'
 const (
 	Test      Channel = "_TEST"

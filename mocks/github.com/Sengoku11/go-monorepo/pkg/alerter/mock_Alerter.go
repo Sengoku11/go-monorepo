@@ -3,9 +3,9 @@
 package alerter
 
 import (
-	alertchan "github.com/Sengoku11/go-monorepo/pkg/alerter/alertchan"
-
 	context "context"
+
+	alerter "github.com/Sengoku11/go-monorepo/pkg/alerter"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -23,17 +23,17 @@ func (_m *MockAlerter) EXPECT() *MockAlerter_Expecter {
 	return &MockAlerter_Expecter{mock: &_m.Mock}
 }
 
-// Alert provides a mock function with given fields: ctx, channel, message, payload
-func (_m *MockAlerter) Alert(ctx context.Context, channel alertchan.Channel, message string, payload map[string]any) error {
-	ret := _m.Called(ctx, channel, message, payload)
+// Alert provides a mock function with given fields: ctx, event
+func (_m *MockAlerter) Alert(ctx context.Context, event alerter.Event) error {
+	ret := _m.Called(ctx, event)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Alert")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, alertchan.Channel, string, map[string]any) error); ok {
-		r0 = rf(ctx, channel, message, payload)
+	if rf, ok := ret.Get(0).(func(context.Context, alerter.Event) error); ok {
+		r0 = rf(ctx, event)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -48,16 +48,14 @@ type MockAlerter_Alert_Call struct {
 
 // Alert is a helper method to define mock.On call
 //   - ctx context.Context
-//   - channel alertchan.Channel
-//   - message string
-//   - payload map[string]any
-func (_e *MockAlerter_Expecter) Alert(ctx interface{}, channel interface{}, message interface{}, payload interface{}) *MockAlerter_Alert_Call {
-	return &MockAlerter_Alert_Call{Call: _e.mock.On("Alert", ctx, channel, message, payload)}
+//   - event alerter.Event
+func (_e *MockAlerter_Expecter) Alert(ctx interface{}, event interface{}) *MockAlerter_Alert_Call {
+	return &MockAlerter_Alert_Call{Call: _e.mock.On("Alert", ctx, event)}
 }
 
-func (_c *MockAlerter_Alert_Call) Run(run func(ctx context.Context, channel alertchan.Channel, message string, payload map[string]any)) *MockAlerter_Alert_Call {
+func (_c *MockAlerter_Alert_Call) Run(run func(ctx context.Context, event alerter.Event)) *MockAlerter_Alert_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(alertchan.Channel), args[2].(string), args[3].(map[string]any))
+		run(args[0].(context.Context), args[1].(alerter.Event))
 	})
 	return _c
 }
@@ -67,14 +65,14 @@ func (_c *MockAlerter_Alert_Call) Return(_a0 error) *MockAlerter_Alert_Call {
 	return _c
 }
 
-func (_c *MockAlerter_Alert_Call) RunAndReturn(run func(context.Context, alertchan.Channel, string, map[string]any) error) *MockAlerter_Alert_Call {
+func (_c *MockAlerter_Alert_Call) RunAndReturn(run func(context.Context, alerter.Event) error) *MockAlerter_Alert_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// HandleError provides a mock function with given fields: err, message, payload
-func (_m *MockAlerter) HandleError(err error, message string, payload map[string]any) {
-	_m.Called(err, message, payload)
+// HandleError provides a mock function with given fields: err, event
+func (_m *MockAlerter) HandleError(err error, event alerter.Event) {
+	_m.Called(err, event)
 }
 
 // MockAlerter_HandleError_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HandleError'
@@ -84,15 +82,14 @@ type MockAlerter_HandleError_Call struct {
 
 // HandleError is a helper method to define mock.On call
 //   - err error
-//   - message string
-//   - payload map[string]any
-func (_e *MockAlerter_Expecter) HandleError(err interface{}, message interface{}, payload interface{}) *MockAlerter_HandleError_Call {
-	return &MockAlerter_HandleError_Call{Call: _e.mock.On("HandleError", err, message, payload)}
+//   - event alerter.Event
+func (_e *MockAlerter_Expecter) HandleError(err interface{}, event interface{}) *MockAlerter_HandleError_Call {
+	return &MockAlerter_HandleError_Call{Call: _e.mock.On("HandleError", err, event)}
 }
 
-func (_c *MockAlerter_HandleError_Call) Run(run func(err error, message string, payload map[string]any)) *MockAlerter_HandleError_Call {
+func (_c *MockAlerter_HandleError_Call) Run(run func(err error, event alerter.Event)) *MockAlerter_HandleError_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(error), args[1].(string), args[2].(map[string]any))
+		run(args[0].(error), args[1].(alerter.Event))
 	})
 	return _c
 }
@@ -102,7 +99,7 @@ func (_c *MockAlerter_HandleError_Call) Return() *MockAlerter_HandleError_Call {
 	return _c
 }
 
-func (_c *MockAlerter_HandleError_Call) RunAndReturn(run func(error, string, map[string]any)) *MockAlerter_HandleError_Call {
+func (_c *MockAlerter_HandleError_Call) RunAndReturn(run func(error, alerter.Event)) *MockAlerter_HandleError_Call {
 	_c.Run(run)
 	return _c
 }

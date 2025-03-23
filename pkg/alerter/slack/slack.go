@@ -46,11 +46,9 @@ func New(log logger.Logger) (*Alerter, error) {
 func (a *Alerter) AlertWithRateLimit(
 	ctx context.Context,
 	cooldown time.Duration,
-	channel alertchan.Channel,
-	message string,
-	payload map[string]any,
+	event alerter.Event,
 ) error {
-	hashed, err := ratelim.Hash(message)
+	hashed, err := ratelim.Hash(event.Msg)
 	if err != nil {
 		return fmt.Errorf("alerter ratelimit: %w", err)
 	}
@@ -63,7 +61,7 @@ func (a *Alerter) AlertWithRateLimit(
 
 	a.msgByTS.AddNow(hashed)
 
-	if err := a.Alert(ctx, channel, message, payload); err != nil {
+	if err := a.Alert(ctx, event); err != nil {
 		a.msgByTS.Remove(hashed) // retry next time
 
 		return err
@@ -73,19 +71,19 @@ func (a *Alerter) AlertWithRateLimit(
 }
 
 // Alert given event to the Slack channel.
-func (a *Alerter) Alert(ctx context.Context, suffix alertchan.Channel, message string, payload map[string]any) error {
-	channel, err := alertchan.FromEnv("SLACK", suffix)
+func (a *Alerter) Alert(ctx context.Context, event alerter.Event) error {
+	channel, err := alertchan.FromEnv("SLACK", event.Chan)
 	if err != nil {
-		return fmt.Errorf(`SLACK_* env is not defined: %w`, err)
+		return fmt.Errorf(`alert channel is undefined: %w`, err)
 	}
 
-	payloadBytes, err := json.Marshal(payload)
+	payloadBytes, err := json.Marshal(event.Args)
 	if err != nil {
 		return fmt.Errorf("alerter payload marshal: %w", err)
 	}
 
 	payloadString := string(payloadBytes)
-	msg := message + "\n" + payloadString
+	msg := event.Msg + "\n" + payloadString
 
 	_, _, err = a.client.PostMessageContext(ctx, channel, slack.MsgOptionText(msg, false))
 	if err != nil {
@@ -96,8 +94,8 @@ func (a *Alerter) Alert(ctx context.Context, suffix alertchan.Channel, message s
 }
 
 // HandleError if failed to send an alert.
-func (a *Alerter) HandleError(err error, message string, payload map[string]any) {
-	a.log.Error(err.Error(), "message", message, payload)
+func (a *Alerter) HandleError(err error, event alerter.Event) {
+	a.log.Error(err.Error(), "message", event.Msg, event.Args)
 }
 
 var _ alerter.Alerter = (*Alerter)(nil)

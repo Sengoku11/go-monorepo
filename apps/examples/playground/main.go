@@ -20,11 +20,8 @@ func main() {
 	}
 
 	alert := alerter.New(slackAlerter)
-
-	alert.Alert(ctx, alertchan.Test, "this is alert", map[string]any{"key1": "value1"})
-	alert.Alert(ctx, alertchan.Test, "this is alert", map[string]any{"key2": "value2"})
-
-	log.Warn("only first alert sent: default 1h rate limit for identical messages, even with different payloads")
+	alert.Alert(ctx, alerter.Event{Chan: alertchan.Test, Msg: "this is alert", Args: map[string]any{"key1": "value1"}})
+	alert.Alert(ctx, alerter.Event{Chan: alertchan.Test, Msg: "this is alert", Args: nil})
 
 	var wg sync.WaitGroup
 
