@@ -23,17 +23,17 @@ func (_m *MockAlerter) EXPECT() *MockAlerter_Expecter {
 	return &MockAlerter_Expecter{mock: &_m.Mock}
 }
 
-// Alert provides a mock function with given fields: ctx, event
-func (_m *MockAlerter) Alert(ctx context.Context, event alerter.Event) error {
-	ret := _m.Called(ctx, event)
+// Alert provides a mock function with given fields: ctx, event, opts
+func (_m *MockAlerter) Alert(ctx context.Context, event alerter.Event, opts alerter.Options) error {
+	ret := _m.Called(ctx, event, opts)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Alert")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, alerter.Event) error); ok {
-		r0 = rf(ctx, event)
+	if rf, ok := ret.Get(0).(func(context.Context, alerter.Event, alerter.Options) error); ok {
+		r0 = rf(ctx, event, opts)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -49,13 +49,14 @@ type MockAlerter_Alert_Call struct {
 // Alert is a helper method to define mock.On call
 //   - ctx context.Context
 //   - event alerter.Event
-func (_e *MockAlerter_Expecter) Alert(ctx interface{}, event interface{}) *MockAlerter_Alert_Call {
-	return &MockAlerter_Alert_Call{Call: _e.mock.On("Alert", ctx, event)}
+//   - opts alerter.Options
+func (_e *MockAlerter_Expecter) Alert(ctx interface{}, event interface{}, opts interface{}) *MockAlerter_Alert_Call {
+	return &MockAlerter_Alert_Call{Call: _e.mock.On("Alert", ctx, event, opts)}
 }
 
-func (_c *MockAlerter_Alert_Call) Run(run func(ctx context.Context, event alerter.Event)) *MockAlerter_Alert_Call {
+func (_c *MockAlerter_Alert_Call) Run(run func(ctx context.Context, event alerter.Event, opts alerter.Options)) *MockAlerter_Alert_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(alerter.Event))
+		run(args[0].(context.Context), args[1].(alerter.Event), args[2].(alerter.Options))
 	})
 	return _c
 }
@@ -65,7 +66,7 @@ func (_c *MockAlerter_Alert_Call) Return(_a0 error) *MockAlerter_Alert_Call {
 	return _c
 }
 
-func (_c *MockAlerter_Alert_Call) RunAndReturn(run func(context.Context, alerter.Event) error) *MockAlerter_Alert_Call {
+func (_c *MockAlerter_Alert_Call) RunAndReturn(run func(context.Context, alerter.Event, alerter.Options) error) *MockAlerter_Alert_Call {
 	_c.Call.Return(run)
 	return _c
 }

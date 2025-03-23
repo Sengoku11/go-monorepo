@@ -3,6 +3,7 @@ package alerter_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	mockalerter "github.com/Sengoku11/go-monorepo/mocks/github.com/Sengoku11/go-monorepo/pkg/alerter"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
@@ -24,6 +25,9 @@ func TestAlert(t *testing.T) {
 	t.Parallel()
 
 	mockAlert := mockalerter.NewMockAlerter(t)
+	options := alerter.DefaultOptions()
+
+	alerter.WithTimeout(7 * time.Second)(options)
 
 	expectedEvent := alerter.Event{
 		Chan: alertchan.Test,
@@ -33,13 +37,13 @@ func TestAlert(t *testing.T) {
 
 	mockAlert.
 		EXPECT().
-		Alert(mock.Anything, expectedEvent).
+		Alert(mock.Anything, expectedEvent, *options).
 		Return(nil)
 
-	// Add two "different" alerters
+	// Construct with two "different" alerters
 	alert := newTestLogger(mockAlert, mockAlert)
 
-	alert.Alert(t.Context(), expectedEvent)
+	alert.Alert(t.Context(), expectedEvent, alerter.WithTimeout(7*time.Second))
 
 	mockAlert.AssertNumberOfCalls(t, "Alert", 2)
 }
@@ -70,6 +74,7 @@ func TestAlert_Errors(t *testing.T) {
 		Msg:  testMessage,
 		Args: map[string]any{testKey1: testVal1},
 	}
+	expectedOptions := alerter.DefaultOptions()
 
 	testCases := []struct {
 		name          string
@@ -91,7 +96,7 @@ func TestAlert_Errors(t *testing.T) {
 
 			mockAlert := mockalerter.NewMockAlerter(t)
 			mockAlert.
-				On("Alert", mock.Anything, expectedEvent).
+				On("Alert", mock.Anything, expectedEvent, *expectedOptions).
 				Return(testCase.returnedError).
 				Once()
 

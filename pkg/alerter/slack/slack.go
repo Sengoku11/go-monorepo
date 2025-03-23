@@ -47,6 +47,7 @@ func (a *Alerter) AlertWithRateLimit(
 	ctx context.Context,
 	cooldown time.Duration,
 	event alerter.Event,
+	opts alerter.Options,
 ) error {
 	hashed, err := ratelim.Hash(event.Msg)
 	if err != nil {
@@ -61,7 +62,7 @@ func (a *Alerter) AlertWithRateLimit(
 
 	a.msgByTS.AddNow(hashed)
 
-	if err := a.Alert(ctx, event); err != nil {
+	if err := a.Alert(ctx, event, opts); err != nil {
 		a.msgByTS.Remove(hashed) // retry next time
 
 		return err
@@ -71,7 +72,7 @@ func (a *Alerter) AlertWithRateLimit(
 }
 
 // Alert given event to the Slack channel.
-func (a *Alerter) Alert(ctx context.Context, event alerter.Event) error {
+func (a *Alerter) Alert(ctx context.Context, event alerter.Event, _ alerter.Options) error {
 	channel, err := alertchan.FromEnv("SLACK", event.Chan)
 	if err != nil {
 		return fmt.Errorf(`alert channel is undefined: %w`, err)

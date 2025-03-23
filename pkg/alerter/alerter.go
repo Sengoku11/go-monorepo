@@ -18,7 +18,7 @@ type Event struct {
 // Alerter defines the interface of alerter used in Client hooks.
 type Alerter interface {
 	// Alert processes the alert event within the provided context.
-	Alert(ctx context.Context, event Event) error
+	Alert(ctx context.Context, event Event, opts Options) error
 
 	// HandleError if failed to send an alert.
 	HandleError(err error, event Event)
@@ -53,7 +53,7 @@ func (a *Client) Alert(ctx context.Context, event Event, opts ...Option) {
 		go func(hook Alerter) {
 			defer wg.Done()
 
-			if err := hook.Alert(timeoutCtx, event); err != nil {
+			if err := hook.Alert(timeoutCtx, event, *options); err != nil {
 				hook.HandleError(err, event)
 			}
 		}(hook)
