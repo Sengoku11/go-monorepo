@@ -15,7 +15,7 @@ func main() {
 	ctx, cancel, log := bootstrap.Default()
 	defer cancel(nil)
 
-	slackAlerter := slack.New(os.Getenv("SLACK_API_TOKEN"), log)
+	slackAlerter := slack.New(os.Getenv("SLACK_API_TOKEN"), slack.WithLogger(log))
 
 	alert := alerter.New(slackAlerter)
 	alert.Alert(ctx, alerter.Event{Chan: alertchan.Test, Msg: "this is alert", Args: map[string]any{"key1": "value1"}})

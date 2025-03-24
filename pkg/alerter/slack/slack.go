@@ -11,17 +11,20 @@ import (
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/alertchan"
 	"github.com/Sengoku11/go-monorepo/pkg/logger"
 	"github.com/Sengoku11/go-monorepo/pkg/ratelim"
-	"github.com/slack-go/slack"
+	slacksdk "github.com/slack-go/slack"
 )
+
+// MessengerPrefix contains a prefix used to find Slack channels from env.
+const MessengerPrefix = "SLACK"
 
 // Client interface for decoupling and testing (mocks) purposes.
 type Client interface {
-	PostMessageContext(ctx context.Context, channelID string, options ...slack.MsgOption) (string, string, error)
+	PostMessageContext(ctx context.Context, channelID string, options ...slacksdk.MsgOption) (string, string, error)
 }
 
-// NewClient returns slack client.
-func NewClient(token string) *slack.Client {
-	client := slack.New(token)
+// NewClient returns slack Client.
+func NewClient(token string) *slacksdk.Client {
+	client := slacksdk.New(token)
 
 	return client
 }
@@ -29,15 +32,24 @@ func NewClient(token string) *slack.Client {
 // Alerter is a Slack implementation of alerter.Alerter.
 type Alerter struct {
 	client  Client
-	log     logger.Logger
+	log     logger.Basic
 	msgByTS *ratelim.MessageByTS
 }
 
 // New instance of Alerter.
-func New(token string, log logger.Logger) *Alerter {
+func New(token string, opts ...Option) *Alerter {
+	options := DefaultOptions()
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	if options.client == nil {
+		options.client = NewClient(token)
+	}
+
 	return &Alerter{
-		log:     log,
-		client:  NewClient(token),
+		log:     options.logger,
+		client:  options.client,
 		msgByTS: ratelim.NewMap(),
 	}
 }
@@ -73,7 +85,7 @@ func (a *Alerter) WithRateLimit(
 
 // Alert given event to the Slack channel.
 func (a *Alerter) Alert(ctx context.Context, event alerter.Event, _ alerter.Options) error {
-	channel, err := alertchan.FromEnv("SLACK", event.Chan)
+	channel, err := alertchan.FromEnv(MessengerPrefix, event.Chan)
 	if err != nil {
 		return fmt.Errorf(`alert channel is undefined: %w`, err)
 	}
@@ -86,7 +98,7 @@ func (a *Alerter) Alert(ctx context.Context, event alerter.Event, _ alerter.Opti
 	payloadString := string(payloadBytes)
 	msg := event.Msg + "\n" + payloadString
 
-	_, _, err = a.client.PostMessageContext(ctx, channel, slack.MsgOptionText(msg, false))
+	_, _, err = a.client.PostMessageContext(ctx, channel, slacksdk.MsgOptionText(msg, false))
 	if err != nil {
 		return fmt.Errorf("slack post message: %w", err)
 	}
