@@ -7,12 +7,18 @@ const AlertTimeout = time.Second * 2
 
 // Options for Alerter.
 type Options struct {
-	timeout time.Duration
+	timeout   time.Duration
+	rateLimit time.Duration
 }
 
 // Timeout returns timeout value stored in Options.
 func (o *Options) Timeout() time.Duration {
 	return o.timeout
+}
+
+// RateLimit returns rateLimit value stored in Options.
+func (o *Options) RateLimit() time.Duration {
+	return o.rateLimit
 }
 
 // Option defines a function type to set options for Alert.
@@ -21,7 +27,8 @@ type Option func(opts *Options)
 // DefaultOptions constructs Options with default values.
 func DefaultOptions() *Options {
 	return &Options{
-		timeout: AlertTimeout,
+		timeout:   AlertTimeout,
+		rateLimit: 0,
 	}
 }
 
@@ -29,5 +36,12 @@ func DefaultOptions() *Options {
 func WithTimeout(timeout time.Duration) Option {
 	return func(o *Options) {
 		o.timeout = timeout
+	}
+}
+
+// WithRateLimit sets a minimal duration to wait for the next alert.
+func WithRateLimit(cooldown time.Duration) Option {
+	return func(o *Options) {
+		o.rateLimit = cooldown
 	}
 }

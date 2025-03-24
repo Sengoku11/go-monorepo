@@ -4,6 +4,7 @@ package main
 import (
 	"os"
 	"sync"
+	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/alertchan"
@@ -16,10 +17,24 @@ func main() {
 	defer cancel(nil)
 
 	slackAlerter := slack.New(os.Getenv("SLACK_API_TOKEN"), slack.WithLogger(log))
-
 	alert := alerter.New(slackAlerter)
-	alert.Alert(ctx, alerter.Event{Chan: alertchan.Test, Msg: "this is alert", Args: map[string]any{"key1": "value1"}})
-	alert.Alert(ctx, alerter.Event{Chan: alertchan.Test, Msg: "this is alert", Args: nil})
+
+	alert.Alert(ctx,
+		alerter.Event{
+			Chan: alertchan.Test,
+			Msg:  "this message will be sent only once",
+			Args: map[string]any{"key1": "value1"},
+		},
+		alerter.WithRateLimit(time.Hour),
+	)
+	alert.Alert(ctx,
+		alerter.Event{
+			Chan: alertchan.Test,
+			Msg:  "this message will be sent only once",
+			Args: nil,
+		},
+		alerter.WithRateLimit(time.Hour),
+	)
 
 	var wg sync.WaitGroup
 

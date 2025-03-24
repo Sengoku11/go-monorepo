@@ -3,6 +3,7 @@ package slack_test
 import (
 	"errors"
 	"testing"
+	"time"
 
 	mockslack "github.com/Sengoku11/go-monorepo/mocks/github.com/Sengoku11/go-monorepo/pkg/alerter/slack"
 	mocklog "github.com/Sengoku11/go-monorepo/mocks/github.com/Sengoku11/go-monorepo/pkg/logger"
@@ -94,6 +95,40 @@ func TestAlerter_HandleError(t *testing.T) {
 		Once()
 
 	alert.HandleError(errExpected, event)
+}
+
+func TestAlerter_WithRateLimit(t *testing.T) {
+	channelEnv := alertchan.EnvVarName(slack.MessengerPrefix, testChannel)
+	channel := "some-channel"
+	t.Setenv(channelEnv, channel)
+
+	expectedPayload := map[string]any{testKey1: testVal1}
+
+	options := alerter.DefaultOptions()
+	alerter.WithRateLimit(time.Minute)(options)
+
+	event := alerter.Event{
+		Chan: testChannel,
+		Msg:  testMessage,
+		Args: expectedPayload,
+	}
+
+	alert, mockClient := testAlerter(t)
+
+	mockClient.
+		EXPECT().
+		PostMessageContext(mock.Anything, channel, mock.Anything).
+		Return("", "", nil).
+		Once()
+
+	if err := alert.Alert(t.Context(), event, *options); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	// Shouldn't call PostMessageContext method.
+	if err := alert.Alert(t.Context(), event, *options); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
 }
 
 func TestToMessage(t *testing.T) {

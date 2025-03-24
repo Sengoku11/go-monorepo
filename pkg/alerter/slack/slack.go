@@ -29,6 +29,9 @@ func NewClient(token string) *slacksdk.Client {
 	return client
 }
 
+// Send is an alias for Alerter.send function.
+type Send = func(ctx context.Context, event alerter.Event) error
+
 // Alerter is a Slack implementation of alerter.Alerter.
 type Alerter struct {
 	client  Client
@@ -54,42 +57,40 @@ func New(token string, opts ...Option) *Alerter {
 	}
 }
 
-// WithRateLimit given event to the Slack channel.
-func (a *Alerter) WithRateLimit(
-	ctx context.Context,
-	cooldown time.Duration,
-	event alerter.Event,
-	opts alerter.Options,
-) error {
-	hashed, err := ratelim.Hash(event.Msg)
-	if err != nil {
-		return fmt.Errorf("alerter ratelimit: %w", err)
+// Alert given event to the Slack channel.
+func (a *Alerter) Alert(ctx context.Context, event alerter.Event, opts alerter.Options) error {
+	send := a.send
+
+	if cooldown := opts.RateLimit(); cooldown != 0 {
+		send = a.withRateLimit(cooldown, send)
 	}
 
-	if ts, exists := a.msgByTS.Get(hashed); exists {
-		if !ratelim.IsPastDue(ts, cooldown) {
-			return nil
-		}
-	}
-
-	a.msgByTS.AddNow(hashed)
-
-	if err := a.Alert(ctx, event, opts); err != nil {
-		a.msgByTS.Remove(hashed) // retry next time
-
-		return err
-	}
-
-	return nil
+	return send(ctx, event)
 }
 
-// Alert given event to the Slack channel.
-func (a *Alerter) Alert(ctx context.Context, event alerter.Event, _ alerter.Options) error {
-	if err := a.send(ctx, event); err != nil {
-		return fmt.Errorf("slack post message: %w", err)
-	}
+func (a *Alerter) withRateLimit(cooldown time.Duration, callback Send) Send {
+	return func(ctx context.Context, event alerter.Event) error {
+		hashed, err := ratelim.Hash(event.Msg)
+		if err != nil {
+			return fmt.Errorf("alerter ratelimit: %w", err)
+		}
 
-	return nil
+		if ts, exists := a.msgByTS.Get(hashed); exists {
+			if !ratelim.IsPastDue(ts, cooldown) {
+				return nil
+			}
+		}
+
+		a.msgByTS.AddNow(hashed)
+
+		if err := callback(ctx, event); err != nil {
+			a.msgByTS.Remove(hashed) // retry next time
+
+			return err
+		}
+
+		return nil
+	}
 }
 
 func (a *Alerter) send(ctx context.Context, event alerter.Event) error {
