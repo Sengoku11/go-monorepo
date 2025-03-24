@@ -36,17 +36,17 @@ func TestWithLogger(t *testing.T) {
 func TestWithClient(t *testing.T) {
 	t.Parallel()
 
-	client := slack.NewClient(slackToken)
+	clt := slack.NewClient(slackToken)
 	options := slack.DefaultOptions()
 
-	slack.WithClient(client)(&options)
+	slack.WithClient(clt)(&options)
 
-	if client != options.Client() {
-		t.Errorf("expected the same underlying client")
+	if clt != options.Client() {
+		t.Errorf("expected the same underlying clt")
 	}
 
-	client = slack.NewClient(slackToken)
-	if client == options.Client() {
+	clt = slack.NewClient(slackToken)
+	if clt == options.Client() {
 		t.Errorf("clients should be different now")
 	}
 }

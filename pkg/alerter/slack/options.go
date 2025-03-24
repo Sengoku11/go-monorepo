@@ -36,14 +36,14 @@ func (o *Options) Client() Client {
 // Option function to modify underlying Options.
 type Option func(options *Options)
 
-// WithLogger puts the logger to Options.
+// WithLogger injects the logger.
 func WithLogger(log logger.Basic) Option {
 	return func(options *Options) {
 		options.logger = log
 	}
 }
 
-// WithClient puts the client to Options.
+// WithClient injects the client (mocked, of course) for testing purposes.
 func WithClient(client Client) Option {
 	return func(options *Options) {
 		options.client = client

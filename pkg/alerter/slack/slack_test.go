@@ -1,9 +1,11 @@
 package slack_test
 
 import (
+	"errors"
 	"testing"
 
 	mockslack "github.com/Sengoku11/go-monorepo/mocks/github.com/Sengoku11/go-monorepo/pkg/alerter/slack"
+	mocklog "github.com/Sengoku11/go-monorepo/mocks/github.com/Sengoku11/go-monorepo/pkg/logger"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/alertchan"
 	"github.com/Sengoku11/go-monorepo/pkg/alerter/slack"
@@ -18,18 +20,21 @@ const (
 	testVal1    = "val1"
 )
 
-func testAlerter(t *testing.T) (*slack.Alerter, *mockslack.MockClient) {
+var errExpected = errors.New("hey")
+
+func testAlerter(t *testing.T, opts ...slack.Option) (*slack.Alerter, *mockslack.MockClient) {
 	t.Helper()
 	mockClient := mockslack.NewMockClient(t)
 
-	return slack.New(slackToken, slack.WithClient(mockClient)), mockClient
+	opts = append(opts, slack.WithClient(mockClient))
+
+	return slack.New(slackToken, opts...), mockClient
 }
 
 func TestNewClient(t *testing.T) {
 	t.Parallel()
 
-	client := slack.NewClient(slackToken)
-	if client == nil {
+	if c := slack.NewClient(slackToken); c == nil {
 		t.Errorf("expected non nil client")
 	}
 }
@@ -66,5 +71,81 @@ func TestAlerter_Alert(t *testing.T) {
 
 	if err := alert.Alert(t.Context(), event, alerter.Options{}); err != nil {
 		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestAlerter_HandleError(t *testing.T) {
+	t.Parallel()
+
+	mockedLogger := mocklog.NewMockLogger(t)
+	expectedPayload := map[string]any{testKey1: testVal1}
+
+	event := alerter.Event{
+		Chan: testChannel,
+		Msg:  testMessage,
+		Args: expectedPayload,
+	}
+
+	alert, _ := testAlerter(t, slack.WithLogger(mockedLogger))
+
+	mockedLogger.
+		EXPECT().
+		Error(errExpected.Error(), "message", testMessage, expectedPayload).
+		Once()
+
+	alert.HandleError(errExpected, event)
+}
+
+func TestToMessage(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		payload map[string]any
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "nil payload",
+			payload: nil,
+			want:    "null",
+			wantErr: false,
+		},
+		{
+			name:    "empty map",
+			payload: map[string]any{},
+			want:    "{}",
+			wantErr: false,
+		},
+		{
+			name:    "valid payload",
+			payload: map[string]any{"key": "value"},
+			want:    `{"key":"value"}`,
+			wantErr: false,
+		},
+		{
+			name: "invalid payload",
+			// functions are not JSON serializable.
+			payload: map[string]any{"key": func() {}},
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := slack.ToMessage(testCase.payload)
+			if (err != nil) != testCase.wantErr {
+				t.Errorf("ToMessage() error = %v, wantErr %v", err, testCase.wantErr)
+
+				return
+			}
+
+			if got != testCase.want {
+				t.Errorf("ToMessage() got = %v, want %v", got, testCase.want)
+			}
+		})
 	}
 }

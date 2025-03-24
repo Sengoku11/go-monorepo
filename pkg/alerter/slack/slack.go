@@ -44,7 +44,7 @@ func New(token string, opts ...Option) *Alerter {
 	}
 
 	if options.client == nil {
-		options.client = NewClient(token)
+		options.client = slacksdk.New(token)
 	}
 
 	return &Alerter{
@@ -85,17 +85,24 @@ func (a *Alerter) WithRateLimit(
 
 // Alert given event to the Slack channel.
 func (a *Alerter) Alert(ctx context.Context, event alerter.Event, _ alerter.Options) error {
+	if err := a.send(ctx, event); err != nil {
+		return fmt.Errorf("slack post message: %w", err)
+	}
+
+	return nil
+}
+
+func (a *Alerter) send(ctx context.Context, event alerter.Event) error {
 	channel, err := alertchan.FromEnv(MessengerPrefix, event.Chan)
 	if err != nil {
 		return fmt.Errorf(`alert channel is undefined: %w`, err)
 	}
 
-	payloadBytes, err := json.Marshal(event.Args)
+	payloadString, err := ToMessage(event.Args)
 	if err != nil {
-		return fmt.Errorf("alerter payload marshal: %w", err)
+		return err
 	}
 
-	payloadString := string(payloadBytes)
 	msg := event.Msg + "\n" + payloadString
 
 	_, _, err = a.client.PostMessageContext(ctx, channel, slacksdk.MsgOptionText(msg, false))
@@ -109,6 +116,16 @@ func (a *Alerter) Alert(ctx context.Context, event alerter.Event, _ alerter.Opti
 // HandleError if failed to send an alert.
 func (a *Alerter) HandleError(err error, event alerter.Event) {
 	a.log.Error(err.Error(), "message", event.Msg, event.Args)
+}
+
+// ToMessage transforms a map to a JSON text.
+func ToMessage(payload map[string]any) (string, error) {
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("alerter payload marshal: %w", err)
+	}
+
+	return string(payloadBytes), nil
 }
 
 var _ alerter.Alerter = (*Alerter)(nil)
