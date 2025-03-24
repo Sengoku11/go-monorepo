@@ -2,6 +2,7 @@
 package main
 
 import (
+	"os"
 	"sync"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
@@ -14,10 +15,7 @@ func main() {
 	ctx, cancel, log := bootstrap.Default()
 	defer cancel(nil)
 
-	slackAlerter, err := slack.New(log)
-	if err != nil {
-		log.Panic("cannot create slack alerter", "error", err)
-	}
+	slackAlerter := slack.New(os.Getenv("SLACK_API_TOKEN"), log)
 
 	alert := alerter.New(slackAlerter)
 	alert.Alert(ctx, alerter.Event{Chan: alertchan.Test, Msg: "this is alert", Args: map[string]any{"key1": "value1"}})

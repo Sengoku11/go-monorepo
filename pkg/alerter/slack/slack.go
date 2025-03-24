@@ -4,9 +4,7 @@ package slack
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/alerter"
@@ -16,34 +14,36 @@ import (
 	"github.com/slack-go/slack"
 )
 
-var errTokenNotFound = errors.New("SLACK_API_TOKEN environment variable not set")
+// Client interface for decoupling and testing (mocks) purposes.
+type Client interface {
+	PostMessageContext(ctx context.Context, channelID string, options ...slack.MsgOption) (string, string, error)
+}
 
-// Alerter is a Slack implementation of alerter.Alerter interface.
+// NewClient returns slack client.
+func NewClient(token string) *slack.Client {
+	client := slack.New(token)
+
+	return client
+}
+
+// Alerter is a Slack implementation of alerter.Alerter.
 type Alerter struct {
-	client  *slack.Client
+	client  Client
 	log     logger.Logger
 	msgByTS *ratelim.MessageByTS
 }
 
-// New instance of Alerter with "SLACK_API_TOKEN" env.
-func New(log logger.Logger) (*Alerter, error) {
-	token := os.Getenv("SLACK_API_TOKEN")
-	if token == "" {
-		return nil, errTokenNotFound
-	}
-
-	client := slack.New(os.Getenv("SLACK_API_TOKEN"))
-	msgByTS := ratelim.NewMap()
-
+// New instance of Alerter.
+func New(token string, log logger.Logger) *Alerter {
 	return &Alerter{
-		client:  client,
 		log:     log,
-		msgByTS: msgByTS,
-	}, nil
+		client:  NewClient(token),
+		msgByTS: ratelim.NewMap(),
+	}
 }
 
-// AlertWithRateLimit given event to the Slack channel.
-func (a *Alerter) AlertWithRateLimit(
+// WithRateLimit given event to the Slack channel.
+func (a *Alerter) WithRateLimit(
 	ctx context.Context,
 	cooldown time.Duration,
 	event alerter.Event,
