@@ -12,7 +12,9 @@ simplifying management across multiple microservices.
 ## Components
 ### Apps (`apps/`)
 * `errdoc`: HTTP service to document and expose defined error codes.
-* `examples`: Demonstrates practical usage of shared libraries.
+* `examples/`: Demonstrates practical usage of shared libraries.
+  * `canaryrollout`: Implements canary rollout with feature flags.
+  * `killswitch`: Remotely turn on/off specific services within the app.
 
 ### Shared Libraries (`pkg/`)
 * `logger`: Structured logging abstraction supporting [zerolog](https://github.com/rs/zerolog).
