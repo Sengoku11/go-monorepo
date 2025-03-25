@@ -37,7 +37,7 @@ func TestLogger(t *testing.T) {
 		fmt.Sprintf(`%s=%s`, testKey3, testVal3),
 	}
 
-	testCases := []struct {
+	tests := []struct {
 		level   string
 		logFunc func(l *zlog.Logger)
 	}{
@@ -61,18 +61,18 @@ func TestLogger(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.level, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.level, func(t *testing.T) {
 			t.Parallel()
 
 			log, buf := newTestLogger()
-			testCase.logFunc(log)
+			tt.logFunc(log)
 
 			out := buf.String()
-			expectedMessage := fmt.Sprintf(`%s %s`, testCase.level, testMessage)
+			expectedMessage := fmt.Sprintf(`%s %s`, tt.level, testMessage)
 
 			if !strings.Contains(out, expectedMessage) {
-				t.Errorf("expected log to contain level %q, got %q", testCase.level, out)
+				t.Errorf("expected log to contain level %q, got %q", tt.level, out)
 			}
 
 			for _, substr := range expectedSubstrings {
@@ -81,7 +81,7 @@ func TestLogger(t *testing.T) {
 				}
 			}
 
-			t.Logf("result output for %s:\n %s\n", testCase.level, out)
+			t.Logf("result output for %s:\n %s\n", tt.level, out)
 		})
 	}
 }

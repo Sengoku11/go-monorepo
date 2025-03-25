@@ -245,19 +245,19 @@ func TestToMessage(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range tests {
-		t.Run(testCase.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := slack.ToMessage(testCase.payload)
-			if (err != nil) != testCase.wantErr {
-				t.Errorf("ToMessage() error = %v, wantErr %v", err, testCase.wantErr)
+			got, err := slack.ToMessage(tt.payload)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ToMessage() error = %v, wantErr %v", err, tt.wantErr)
 
 				return
 			}
 
-			if got != testCase.want {
-				t.Errorf("ToMessage() got = %v, want %v", got, testCase.want)
+			if got != tt.want {
+				t.Errorf("ToMessage() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

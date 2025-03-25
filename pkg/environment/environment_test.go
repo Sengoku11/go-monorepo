@@ -17,7 +17,7 @@ const (
 )
 
 func TestCurrent(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name      string
 		env       string
 		expectEnv environment.Environment
@@ -49,19 +49,19 @@ func TestCurrent(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			if testCase.env != "" {
-				t.Setenv("ENVIRONMENT", testCase.env)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.env != "" {
+				t.Setenv("ENVIRONMENT", tt.env)
 			}
 
 			env, err := environment.Current()
-			if !errors.Is(err, testCase.expectErr) {
-				t.Errorf("expected %v error, but got %v", testCase.expectErr, err)
+			if !errors.Is(err, tt.expectErr) {
+				t.Errorf("expected %v error, but got %v", tt.expectErr, err)
 			}
 
-			if env != testCase.expectEnv {
-				t.Errorf("expected %s env, but got %s", testCase.expectEnv, env)
+			if env != tt.expectEnv {
+				t.Errorf("expected %s env, but got %s", tt.expectEnv, env)
 			}
 		})
 	}

@@ -92,21 +92,21 @@ func TestHash(t *testing.T) {
 	t.Parallel()
 
 	const iterations = 1_000
-	for i := range iterations {
+	for iter := range iterations {
 		txt := rand.Text()
 
 		hash1, err := ratelim.Hash(txt, nil)
 		if err != nil {
-			t.Fatalf("Iteration %d: unexpected error hashing text %q: %v", i, txt, err)
+			t.Fatalf("Iteration %d: unexpected error hashing text %q: %v", iter, txt, err)
 		}
 
 		hash2, err := ratelim.Hash(txt, nil)
 		if err != nil {
-			t.Fatalf("Iteration %d: unexpected error on second hash call for text %q: %v", i, txt, err)
+			t.Fatalf("Iteration %d: unexpected error on second hash call for text %q: %v", iter, txt, err)
 		}
 
 		if hash1 != hash2 {
-			t.Fatalf("Iteration %d: non-deterministic hash for text %q: got %v and %v", i, txt, hash1, hash2)
+			t.Fatalf("Iteration %d: non-deterministic hash for text %q: got %v and %v", iter, txt, hash1, hash2)
 		}
 	}
 }
@@ -144,13 +144,13 @@ func TestMessageByTS(t *testing.T) {
 	size := 1_000
 	expectedMap := make(map[uint64]int64, size)
 
-	for i := range size {
-		timestamp := ratelim.TimeNow() + int64(i)
+	for iter := range size {
+		timestamp := ratelim.TimeNow() + int64(iter)
 		txt := rand.Text()
 
 		hash, err := ratelim.Hash(txt, nil)
 		if err != nil {
-			t.Fatalf("Iteration %d: unexpected error hashing text %q: %v", i, txt, err)
+			t.Fatalf("Iteration %d: unexpected error hashing text %q: %v", iter, txt, err)
 		}
 
 		expectedMap[hash] = timestamp

@@ -26,8 +26,9 @@ linters-settings:
     # Enable shadow checking (replacing the deprecated check-shadowing).
     shadow: true
   varnamelen:
+    ignore-names:
+      - tt
     ignore-decls:
       - wg sync.WaitGroup
       - r *http.Request
       - w http.ResponseWriter
-      - i int

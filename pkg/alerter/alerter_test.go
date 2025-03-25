@@ -76,7 +76,7 @@ func TestAlert_Errors(t *testing.T) {
 	}
 	expectedOptions := alerter.DefaultOptions()
 
-	testCases := []struct {
+	tests := []struct {
 		name          string
 		returnedError error
 	}{
@@ -90,19 +90,19 @@ func TestAlert_Errors(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			mockAlert := mockalerter.NewMockAlerter(t)
 			mockAlert.
 				On("Alert", mock.Anything, expectedEvent, *expectedOptions).
-				Return(testCase.returnedError).
+				Return(tt.returnedError).
 				Once()
 
 			mockAlert.
 				EXPECT().
-				HandleError(testCase.returnedError, expectedEvent).
+				HandleError(tt.returnedError, expectedEvent).
 				Once()
 
 			alert := newTestLogger(mockAlert)
