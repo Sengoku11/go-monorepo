@@ -41,6 +41,10 @@ go install github.com/vektra/mockery/v2@v2.52.4
 # stringer
 go install golang.org/x/tools/cmd/stringer@v0.30.0
 
+# linters
+go install github.com/gordonklaus/ineffassign@latest
+go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+
 # documentation
 go install golang.org/x/pkgsite/cmd/pkgsite@latest
 ```

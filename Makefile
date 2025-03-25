@@ -8,6 +8,10 @@ tidy:
 		( cd $$dir && go fmt ) || exit $$?; \
 		echo "Lint fixing in $$dir..."; \
 		( cd $$dir && golangci-lint run --fix ) || true; \
+		echo "Check ineffassign in $$dir..."; \
+		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH ineffassign ./... ) || true; \
+		echo "Check gocyclo in $$dir..."; \
+		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH gocyclo -over 7 . ) || true; \
 		echo "Generating code in $$dir..."; \
 		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH go generate ./... ) || true; \
 	done
@@ -19,8 +23,10 @@ lint:
 		( cd $$dir && go vet ) || exit $$?; \
 		echo "Running golangci-lint in $$dir..."; \
 		(cd $$dir && golangci-lint run) || exit $$?; \
-		echo "Run tests in $$dir..."; \
-		( cd $$dir && go test -race ./...) || exit; \
+		echo "Running ineffassign in $$dir..."; \
+		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH ineffassign ./... ) ||  exit $$?; \
+		echo "Running gocyclo in $$dir..."; \
+		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH gocyclo -over 7 . ) ||  exit $$?; \
 	done
 
 test:
