@@ -29,5 +29,14 @@ test:
 		( cd $$dir && go test -race -cover ./...) || exit; \
 	done
 
+coverage:
+	@mkdir -p reports
+	@for dir in $(shell find apps -mindepth 1 -maxdepth 1 -type d) $(shell find pkg -mindepth 1 -maxdepth 1 -type d); do \
+		echo "Running tests in $$dir..."; \
+		( cd $$dir && \
+		  go test -race -cover -json -coverprofile=coverage.out ./... > ../../reports/`basename $$dir`_report.json && \
+		  go tool cover -html=coverage.out -o ../../reports/`basename $$dir`_coverage.html ) || exit; \
+	done
+
 mock:
 	$(shell go env GOPATH)/bin/mockery

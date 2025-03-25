@@ -3,21 +3,36 @@ package ratelim
 
 import (
 	"fmt"
+	"hash"
 	"hash/fnv"
 	"sync"
 	"time"
 )
 
-// Hash the given message into a deterministic 64-bit FNV-1a number.
-func Hash(msg string) (uint64, error) {
-	hash := fnv.New64a()
+// Hash64 for mock testing.
+type Hash64 interface {
+	Write(p []byte) (n int, err error)
+	Sum64() uint64
+}
 
-	_, err := hash.Write([]byte(msg))
+// New64a returns Hash64 function.
+func New64a() hash.Hash64 {
+	return fnv.New64a()
+}
+
+// Hash the given message into a deterministic 64-bit FNV-1a number
+// if optional hashFunc not provided.
+func Hash(msg string, hashFunc Hash64) (uint64, error) {
+	if hashFunc == nil {
+		hashFunc = New64a()
+	}
+
+	_, err := hashFunc.Write([]byte(msg))
 	if err != nil {
 		return 0, fmt.Errorf("error hashing message: %w", err)
 	}
 
-	return hash.Sum64(), nil
+	return hashFunc.Sum64(), nil
 }
 
 // MessageByTS provides a thread-safe map optimized to reduce garbage collection

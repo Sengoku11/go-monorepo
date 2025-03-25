@@ -29,6 +29,7 @@ Thumbs.db
 bin/
 build/
 vendor/
+reports/
 
 # === Log Files ===
 *.log

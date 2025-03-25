@@ -2,16 +2,22 @@ package ratelim_test
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
+	mockhash "github.com/Sengoku11/go-monorepo/mocks/github.com/Sengoku11/go-monorepo/pkg/ratelim"
 	"github.com/Sengoku11/go-monorepo/pkg/ratelim"
+	"github.com/stretchr/testify/mock"
 )
+
+var errTest = errors.New("test")
 
 // Hash is deterministic, it will consistently produce the same hash value for the same input string.
 func ExampleHash() {
-	hash, err := ratelim.Hash("Hello 42 world!")
+	hash, err := ratelim.Hash("Hello 42 world!", nil)
 
 	fmt.Printf("%d, %v\n", hash, err)
 
@@ -21,7 +27,7 @@ func ExampleHash() {
 
 func ExampleMessageByTS_Add() {
 	mbt := ratelim.NewMap()
-	hash, _ := ratelim.Hash("Hello world!")
+	hash, _ := ratelim.Hash("Hello world!", nil)
 	now := ratelim.TimeNow()
 
 	mbt.Add(hash, now)
@@ -34,7 +40,7 @@ func ExampleMessageByTS_Add() {
 
 func ExampleMessageByTS_Get() {
 	mbt := ratelim.NewMap()
-	hash, _ := ratelim.Hash("Hello world!")
+	hash, _ := ratelim.Hash("Hello world!", nil)
 
 	mbt.Add(hash, 1740925588000)
 
@@ -46,7 +52,7 @@ func ExampleMessageByTS_Get() {
 
 func ExampleMessageByTS_AddNow() {
 	mbt := ratelim.NewMap()
-	hash, _ := ratelim.Hash("Hello world!")
+	hash, _ := ratelim.Hash("Hello world!", nil)
 
 	mbt.AddNow(hash)
 
@@ -58,7 +64,7 @@ func ExampleMessageByTS_AddNow() {
 
 func ExampleMessageByTS_Remove() {
 	mbt := ratelim.NewMap()
-	hash, _ := ratelim.Hash("Hello world!")
+	hash, _ := ratelim.Hash("Hello world!", nil)
 
 	mbt.AddNow(hash)
 	mbt.Remove(hash)
@@ -89,12 +95,12 @@ func TestHash(t *testing.T) {
 	for i := range iterations {
 		txt := rand.Text()
 
-		hash1, err := ratelim.Hash(txt)
+		hash1, err := ratelim.Hash(txt, nil)
 		if err != nil {
 			t.Fatalf("Iteration %d: unexpected error hashing text %q: %v", i, txt, err)
 		}
 
-		hash2, err := ratelim.Hash(txt)
+		hash2, err := ratelim.Hash(txt, nil)
 		if err != nil {
 			t.Fatalf("Iteration %d: unexpected error on second hash call for text %q: %v", i, txt, err)
 		}
@@ -102,6 +108,25 @@ func TestHash(t *testing.T) {
 		if hash1 != hash2 {
 			t.Fatalf("Iteration %d: non-deterministic hash for text %q: got %v and %v", i, txt, hash1, hash2)
 		}
+	}
+}
+
+func TestHash_Error(t *testing.T) {
+	t.Parallel()
+
+	mockHashFunc := mockhash.NewMockHash64(t)
+
+	mockHashFunc.On("Write", mock.Anything).Return(0, errTest).Once()
+
+	txt := "anything"
+
+	_, err := ratelim.Hash(txt, mockHashFunc)
+	if err == nil {
+		t.Fatalf("expected non nil error")
+	}
+
+	if !strings.Contains(err.Error(), "error hashing message") {
+		t.Errorf("expected error hashing message, but got: %v", err)
 	}
 }
 
@@ -123,7 +148,7 @@ func TestMessageByTS(t *testing.T) {
 		timestamp := ratelim.TimeNow() + int64(i)
 		txt := rand.Text()
 
-		hash, err := ratelim.Hash(txt)
+		hash, err := ratelim.Hash(txt, nil)
 		if err != nil {
 			t.Fatalf("Iteration %d: unexpected error hashing text %q: %v", i, txt, err)
 		}

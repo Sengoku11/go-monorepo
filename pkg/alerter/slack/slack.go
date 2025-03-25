@@ -70,7 +70,7 @@ func (a *Alerter) Alert(ctx context.Context, event alerter.Event, opts alerter.O
 
 func (a *Alerter) withRateLimit(cooldown time.Duration, callback Send) Send {
 	return func(ctx context.Context, event alerter.Event) error {
-		hashed, err := ratelim.Hash(event.Msg)
+		hashed, err := ratelim.Hash(event.Msg, nil)
 		if err != nil {
 			return fmt.Errorf("alerter ratelimit: %w", err)
 		}
@@ -123,7 +123,7 @@ func (a *Alerter) HandleError(err error, event alerter.Event) {
 func ToMessage(payload map[string]any) (string, error) {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return "", fmt.Errorf("alerter payload marshal: %w", err)
+		return "", fmt.Errorf("fail to marshal alert payload: %w", err)
 	}
 
 	return string(payloadBytes), nil

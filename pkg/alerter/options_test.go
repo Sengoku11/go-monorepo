@@ -40,3 +40,22 @@ func TestWithTimeout(t *testing.T) {
 		t.Errorf("expected timeout to be %v, but got %v", expectedTimeout, timeout)
 	}
 }
+
+func TestWithRateLimit(t *testing.T) {
+	t.Parallel()
+
+	expectedRateLimit := time.Minute
+
+	opts := alerter.DefaultOptions()
+	if opts == nil {
+		t.Error("expected options, but got nil")
+
+		return
+	}
+
+	alerter.WithRateLimit(expectedRateLimit)(opts)
+
+	if r := opts.RateLimit(); r != expectedRateLimit {
+		t.Errorf("expected r to be %v, but got %v", expectedRateLimit, r)
+	}
+}

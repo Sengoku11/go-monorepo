@@ -85,7 +85,7 @@ func (l *Logger) DisableDebugMode() {
 // WithRateLimit applies rate limiting to a logging callback based on the message hash.
 func (l *Logger) WithRateLimit(cooldown time.Duration, callback logger.LogMethod) logger.LogMethod {
 	return func(message string, args ...any) {
-		hashed, err := ratelim.Hash(message)
+		hashed, err := ratelim.Hash(message, nil)
 		if err != nil {
 			l.Error("failed to hash message in WithRateLimit", "error", err.Error(), "message", message)
 

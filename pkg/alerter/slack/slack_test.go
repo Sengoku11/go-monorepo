@@ -2,6 +2,7 @@ package slack_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -19,6 +20,7 @@ const (
 	testChannel = "_TESTING"
 	testKey1    = "key1"
 	testVal1    = "val1"
+	channel     = "some-channel"
 )
 
 var errExpected = errors.New("hey")
@@ -51,11 +53,9 @@ func TestNew(t *testing.T) {
 
 func TestAlerter_Alert(t *testing.T) {
 	channelEnv := alertchan.EnvVarName(slack.MessengerPrefix, testChannel)
-	channel := "some-channel"
 	t.Setenv(channelEnv, channel)
 
 	expectedPayload := map[string]any{testKey1: testVal1}
-
 	event := alerter.Event{
 		Chan: testChannel,
 		Msg:  testMessage,
@@ -63,7 +63,6 @@ func TestAlerter_Alert(t *testing.T) {
 	}
 
 	alert, mockClient := testAlerter(t)
-
 	mockClient.
 		EXPECT().
 		PostMessageContext(mock.Anything, channel, mock.Anything).
@@ -73,6 +72,55 @@ func TestAlerter_Alert(t *testing.T) {
 	if err := alert.Alert(t.Context(), event, alerter.Options{}); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
+}
+
+func TestAlerter_Alert_UndefinedChannel(t *testing.T) {
+	t.Parallel()
+
+	expectedPayload := map[string]any{testKey1: testVal1}
+	event := alerter.Event{
+		Chan: testChannel,
+		Msg:  testMessage,
+		Args: expectedPayload,
+	}
+
+	alert, mockClient := testAlerter(t)
+
+	err := alert.Alert(t.Context(), event, alerter.Options{})
+	if err == nil {
+		t.Fatalf("expected error, but got nil")
+	}
+
+	if !strings.Contains(err.Error(), "alert channel is undefined") {
+		t.Errorf("error must relate to undefined channel, but got: %v", err)
+	}
+
+	mockClient.AssertNumberOfCalls(t, "PostMessageContext", 0)
+}
+
+func TestAlerter_Alert_MarshalError(t *testing.T) {
+	channelEnv := alertchan.EnvVarName(slack.MessengerPrefix, testChannel)
+	t.Setenv(channelEnv, channel)
+
+	expectedPayload := map[string]any{"key": func() {}}
+	event := alerter.Event{
+		Chan: testChannel,
+		Msg:  testMessage,
+		Args: expectedPayload,
+	}
+
+	alert, mockClient := testAlerter(t)
+
+	err := alert.Alert(t.Context(), event, alerter.Options{})
+	if err == nil {
+		t.Fatalf("expected error, but got nil")
+	}
+
+	if !strings.Contains(err.Error(), "fail to marshal alert payload") {
+		t.Errorf("error must relate to marshalling, but got: %v", err)
+	}
+
+	mockClient.AssertNumberOfCalls(t, "PostMessageContext", 0)
 }
 
 func TestAlerter_HandleError(t *testing.T) {
@@ -99,7 +147,6 @@ func TestAlerter_HandleError(t *testing.T) {
 
 func TestAlerter_WithRateLimit(t *testing.T) {
 	channelEnv := alertchan.EnvVarName(slack.MessengerPrefix, testChannel)
-	channel := "some-channel"
 	t.Setenv(channelEnv, channel)
 
 	expectedPayload := map[string]any{testKey1: testVal1}
@@ -129,6 +176,37 @@ func TestAlerter_WithRateLimit(t *testing.T) {
 	if err := alert.Alert(t.Context(), event, *options); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
+}
+
+func TestAlerter_WithRateLimit_Resend(t *testing.T) {
+	channelEnv := alertchan.EnvVarName(slack.MessengerPrefix, testChannel)
+	t.Setenv(channelEnv, channel)
+
+	expectedPayload := map[string]any{testKey1: testVal1}
+	event := alerter.Event{
+		Chan: testChannel,
+		Msg:  testMessage,
+		Args: expectedPayload,
+	}
+
+	options := alerter.DefaultOptions()
+	alerter.WithRateLimit(time.Minute)(options)
+
+	alert, mockClient := testAlerter(t)
+
+	mockClient.
+		On("PostMessageContext", mock.Anything, channel, mock.Anything).
+		Return("", "", errExpected)
+
+	// When fail to alert, rate limit shouldn't count
+	if err := alert.Alert(t.Context(), event, *options); err == nil {
+		t.Errorf("expected errorr, but received nil")
+	}
+
+	// This should try to alert again
+	_ = alert.Alert(t.Context(), event, *options)
+
+	mockClient.AssertNumberOfCalls(t, "PostMessageContext", 2)
 }
 
 func TestToMessage(t *testing.T) {
