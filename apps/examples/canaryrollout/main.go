@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Initialize a feature flag client.
-	client, err := featureflag.NewClient(ctx, log, environment)
+	client, err := featureflag.NewClient(ctx, environment)
 	if err != nil {
 		log.Panic(err.Error())
 	}

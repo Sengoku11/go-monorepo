@@ -18,7 +18,7 @@ func main() {
 	defer cancel(nil)
 
 	// Initialize a feature flag client
-	client, err := featureflag.NewClient(ctx, log)
+	client, err := featureflag.NewClient(ctx)
 	if err != nil {
 		log.Panic(err.Error())
 	}

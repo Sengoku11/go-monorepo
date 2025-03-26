@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/Sengoku11/go-monorepo/pkg/fflag"
-	"github.com/Sengoku11/go-monorepo/pkg/logger"
 	gofeatureflaginprocess "github.com/open-feature/go-sdk-contrib/providers/go-feature-flag-in-process/pkg"
 	ffclient "github.com/thomaspoignant/go-feature-flag"
 	"github.com/thomaspoignant/go-feature-flag/retriever/fileretriever"
@@ -33,7 +32,7 @@ var errPathNotFound = errors.New("runtime.Caller(0) failed")
 //   - BitBucket
 //   - AzBlobStorage
 //   - Flipt, Unleash, and other cloud providers.
-func NewClient(ctx context.Context, log logger.Logger) (*fflag.Client, error) {
+func NewClient(ctx context.Context) (*fflag.Client, error) {
 	_, currentFilePath, _, ok := runtime.Caller(0)
 	if !ok {
 		return nil, errPathNotFound
@@ -58,7 +57,7 @@ func NewClient(ctx context.Context, log logger.Logger) (*fflag.Client, error) {
 		return nil, fmt.Errorf("failed to start provider: %w", err)
 	}
 
-	client, err := fflag.New("example", provider, log)
+	client, err := fflag.New("example", provider)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get fflag client: %w", err)
 	}

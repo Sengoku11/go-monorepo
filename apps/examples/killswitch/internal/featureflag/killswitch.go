@@ -29,10 +29,15 @@ func NewKillSwitch(ctx context.Context, client *fflag.Client, log logger.Logger)
 
 	enabled.Store(initValue)
 
-	go client.WatchBoolFlag(ctx, flag, time.NewTicker(time.Second), func(val bool) {
-		enabled.Store(val)
+	go client.WatchBoolFlag(ctx, flag, time.NewTicker(time.Second), func(val bool, err error) {
+		if err != nil {
+			logErr := log.WithRateLimit(10*time.Minute, log.Error) //nolint:mnd
+			logErr("error during watch", "error", err.Error())
+		} else {
+			enabled.Store(val)
 
-		log.Info("kill switch triggered", "enabled", val)
+			log.Info("kill switch triggered", "enabled", val)
+		}
 	})
 
 	return enabled, nil
