@@ -47,7 +47,6 @@ func TestNew(t *testing.T) {
 	}
 }
 
-//nolint:funlen
 func TestClient_WatchBoolFlag(t *testing.T) {
 	t.Parallel()
 

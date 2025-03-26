@@ -10,6 +10,11 @@ issues:
   # Exclude files such as generated files.
   exclude-files:
     - ".*_generated.go"
+  exclude-rules:
+    # disable funlen for all _test.go files
+    - path: _test.go
+      linters:
+        - funlen
   max-issues-per-linter: 0
   max-same-issues: 0
   exclude-use-default: false
@@ -35,3 +40,4 @@ linters-settings:
       - wg sync.WaitGroup
       - r *http.Request
       - w http.ResponseWriter
+      - rr *httptest.ResponseRecorder
