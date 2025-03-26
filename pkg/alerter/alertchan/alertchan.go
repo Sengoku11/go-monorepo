@@ -7,8 +7,8 @@ import (
 	"os"
 )
 
-// Channel represents an alert destination as defined via environment variables.
-type Channel string
+// Target represents an alert destination as defined via environment variables.
+type Target string
 
 // It indicates the alerting channel.
 //
@@ -18,26 +18,26 @@ type Channel string
 // By convention, the constant's value should begin with an underscore (e.g., _ENV_NAME).
 //
 //	Example
-//	- Constant: const Error Chan = "_ERROR"
+//	- Constant: const Error Target = "_ERROR"
 //	- Env     : SLACK_ERROR='account-microservice-errors'
 const (
-	Test      Channel = "_TEST"
-	Error     Channel = "_ERROR"
-	FlagError Channel = "_FLAG_ERROR"
+	Test      Target = "_TEST"
+	Error     Target = "_ERROR"
+	FlagError Target = "_FLAG_ERROR"
 )
 
-// ErrChannelNotFound returned when fail to find alert channel name for a given Channel and other params.
+// ErrChannelNotFound returned when fail to find alert channel name for a given Target and other params.
 var ErrChannelNotFound = errors.New("channel not found")
 
 // EnvVarName returns environment variable's name.
-func EnvVarName(messenger string, suffix Channel) string {
-	return fmt.Sprintf("%s%s", messenger, suffix)
+func EnvVarName(messenger string, target Target) string {
+	return fmt.Sprintf("%s%s", messenger, target)
 }
 
-// FromEnv returns alert channel name for a given messenger and Channel suffix.
+// FromEnv returns alert channel name for a given messenger and Target suffix.
 // Returns error if the channel is not found.
-func FromEnv(messenger string, suffix Channel) (string, error) {
-	env := EnvVarName(messenger, suffix)
+func FromEnv(messenger string, target Target) (string, error) {
+	env := EnvVarName(messenger, target)
 
 	channel := os.Getenv(env)
 	if channel == "" {

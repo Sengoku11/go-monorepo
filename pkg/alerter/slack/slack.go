@@ -94,7 +94,7 @@ func (a *Alerter) withRateLimit(cooldown time.Duration, callback Send) Send {
 }
 
 func (a *Alerter) send(ctx context.Context, event alerter.Event) error {
-	channel, err := alertchan.FromEnv(MessengerPrefix, event.Chan)
+	channel, err := alertchan.FromEnv(MessengerPrefix, event.Target)
 	if err != nil {
 		return fmt.Errorf(`alert channel is undefined: %w`, err)
 	}

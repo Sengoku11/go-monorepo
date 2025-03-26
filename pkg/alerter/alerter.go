@@ -10,9 +10,9 @@ import (
 
 // Event encapsulates alert data.
 type Event struct {
-	Chan alertchan.Channel
-	Msg  string
-	Args map[string]any
+	Target alertchan.Target
+	Msg    string
+	Args   map[string]any
 }
 
 // Alerter defines the interface of alerter used in Client hooks.

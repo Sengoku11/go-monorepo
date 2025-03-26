@@ -21,17 +21,17 @@ func main() {
 
 	alert.Alert(ctx,
 		alerter.Event{
-			Chan: alertchan.Test,
-			Msg:  "this message will be sent only once",
-			Args: map[string]any{"key1": "value1"},
+			Target: alertchan.Test,
+			Msg:    "this message will be sent only once",
+			Args:   map[string]any{"key1": "value1"},
 		},
 		alerter.WithRateLimit(time.Hour),
 	)
 	alert.Alert(ctx,
 		alerter.Event{
-			Chan: alertchan.Test,
-			Msg:  "this message will be sent only once",
-			Args: nil,
+			Target: alertchan.Test,
+			Msg:    "this message will be sent only once",
+			Args:   nil,
 		},
 		alerter.WithRateLimit(time.Hour),
 	)

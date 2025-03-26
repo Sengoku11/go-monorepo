@@ -57,9 +57,9 @@ func TestAlerter_Alert(t *testing.T) {
 
 	expectedPayload := map[string]any{testKey1: testVal1}
 	event := alerter.Event{
-		Chan: testChannel,
-		Msg:  testMessage,
-		Args: expectedPayload,
+		Target: testChannel,
+		Msg:    testMessage,
+		Args:   expectedPayload,
 	}
 
 	alert, mockClient := testAlerter(t)
@@ -79,9 +79,9 @@ func TestAlerter_Alert_UndefinedChannel(t *testing.T) {
 
 	expectedPayload := map[string]any{testKey1: testVal1}
 	event := alerter.Event{
-		Chan: testChannel,
-		Msg:  testMessage,
-		Args: expectedPayload,
+		Target: testChannel,
+		Msg:    testMessage,
+		Args:   expectedPayload,
 	}
 
 	alert, mockClient := testAlerter(t)
@@ -104,9 +104,9 @@ func TestAlerter_Alert_MarshalError(t *testing.T) {
 
 	expectedPayload := map[string]any{"key": func() {}}
 	event := alerter.Event{
-		Chan: testChannel,
-		Msg:  testMessage,
-		Args: expectedPayload,
+		Target: testChannel,
+		Msg:    testMessage,
+		Args:   expectedPayload,
 	}
 
 	alert, mockClient := testAlerter(t)
@@ -130,9 +130,9 @@ func TestAlerter_HandleError(t *testing.T) {
 	expectedPayload := map[string]any{testKey1: testVal1}
 
 	event := alerter.Event{
-		Chan: testChannel,
-		Msg:  testMessage,
-		Args: expectedPayload,
+		Target: testChannel,
+		Msg:    testMessage,
+		Args:   expectedPayload,
 	}
 
 	alert, _ := testAlerter(t, slack.WithLogger(mockedLogger))
@@ -155,9 +155,9 @@ func TestAlerter_WithRateLimit(t *testing.T) {
 	alerter.WithRateLimit(time.Minute)(options)
 
 	event := alerter.Event{
-		Chan: testChannel,
-		Msg:  testMessage,
-		Args: expectedPayload,
+		Target: testChannel,
+		Msg:    testMessage,
+		Args:   expectedPayload,
 	}
 
 	alert, mockClient := testAlerter(t)
@@ -184,9 +184,9 @@ func TestAlerter_WithRateLimit_Resend(t *testing.T) {
 
 	expectedPayload := map[string]any{testKey1: testVal1}
 	event := alerter.Event{
-		Chan: testChannel,
-		Msg:  testMessage,
-		Args: expectedPayload,
+		Target: testChannel,
+		Msg:    testMessage,
+		Args:   expectedPayload,
 	}
 
 	options := alerter.DefaultOptions()

@@ -30,9 +30,9 @@ func TestAlert(t *testing.T) {
 	alerter.WithTimeout(7 * time.Second)(options)
 
 	expectedEvent := alerter.Event{
-		Chan: alertchan.Test,
-		Msg:  testMessage,
-		Args: map[string]any{testKey1: testVal1},
+		Target: alertchan.Test,
+		Msg:    testMessage,
+		Args:   map[string]any{testKey1: testVal1},
 	}
 
 	mockAlert.
@@ -55,9 +55,9 @@ func TestAlert_NotCalled(t *testing.T) {
 	alert := newTestLogger()
 
 	expectedEvent := alerter.Event{
-		Chan: alertchan.Test,
-		Msg:  testMessage,
-		Args: map[string]any{testKey1: testVal1},
+		Target: alertchan.Test,
+		Msg:    testMessage,
+		Args:   map[string]any{testKey1: testVal1},
 	}
 
 	// Alert without any hook
@@ -70,9 +70,9 @@ func TestAlert_Errors(t *testing.T) {
 	t.Parallel()
 
 	expectedEvent := alerter.Event{
-		Chan: alertchan.Test,
-		Msg:  testMessage,
-		Args: map[string]any{testKey1: testVal1},
+		Target: alertchan.Test,
+		Msg:    testMessage,
+		Args:   map[string]any{testKey1: testVal1},
 	}
 	expectedOptions := alerter.DefaultOptions()
 

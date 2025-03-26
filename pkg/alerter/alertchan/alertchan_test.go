@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	testChannel     = alertchan.Channel("_TEST")
+	testChannel     = alertchan.Target("_TEST")
 	testMessenger   = "WASSUP"
 	testChannelName = "test-channel-for-tests"
 )
