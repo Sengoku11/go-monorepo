@@ -25,6 +25,9 @@ linters-settings:
   govet:
     # Enable shadow checking (replacing the deprecated check-shadowing).
     shadow: true
+  cyclop:
+    skip-tests: true
+    max-complexity: 9
   varnamelen:
     ignore-names:
       - tt

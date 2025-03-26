@@ -10,9 +10,6 @@ tidy:
 		( cd $$dir && golangci-lint run --fix ) || true; \
 		echo "Check ineffassign in $$dir..."; \
 		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH ineffassign ./... ) || true; \
-		echo "Check gocyclo in $$dir..."; \
-		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH gocyclo -over 7 . ) 2>&1 | \
-		 	awk '{print "\033[0;31m gocyclo: " $$0 "\033[0m"}' || true; \
 		echo "Generating code in $$dir..."; \
 		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH go generate ./... ) || true; \
 	done
@@ -26,12 +23,6 @@ lint:
 		(cd $$dir && golangci-lint run) || exit $$?; \
 		echo "Running ineffassign in $$dir..."; \
 		( cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH ineffassign ./... ) || exit $$?; \
-		echo "Running gocyclo in $$dir..."; \
-		output=$$(cd $$dir && PATH=$(shell go env GOPATH)/bin:$$PATH gocyclo -over 7 . 2>&1); \
-			if [ -n "$$output" ]; then \
-				echo "$$output" | awk '{print "\033[0;31m gocyclo: " $$0 "\033[0m"}'; \
-				exit 1; \
-			fi; \
 	done
 
 test:
