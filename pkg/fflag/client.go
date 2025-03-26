@@ -45,13 +45,6 @@ type BoolCallback func(bool, error)
 func (c *Client) WatchBoolFlag(ctx context.Context, flag BooleanFlag, ticker *time.Ticker, callback BoolCallback) {
 	defer ticker.Stop()
 
-	// currentVal, err := c.fetchBooleanValue(ctx, flag)
-	// if err != nil {
-	//	currentVal = flag.DefaultValue
-	//
-	//	callback(flag.DefaultValue, err)
-	//}
-
 	currentVal := flag.DefaultValue
 
 	for {

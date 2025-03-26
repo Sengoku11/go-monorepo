@@ -164,7 +164,7 @@ func TestClient_WatchBoolFlag(t *testing.T) {
 
 			select {
 			case <-ctx.Done():
-			case <-time.After(time.Millisecond):
+			case <-time.After(10 * time.Millisecond):
 			}
 
 			cancel()
