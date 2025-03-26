@@ -18,7 +18,7 @@ func LogRequest(log logger.Logger) func(http.Handler) http.Handler {
 
 			defer func() {
 				duration := time.Since(start).Milliseconds()
-				msg, fields := buildLogEntry(r, duration)
+				msg, fields := BuildLogEntry(r, duration)
 				log.Info(msg, fields...)
 			}()
 
@@ -27,8 +27,8 @@ func LogRequest(log logger.Logger) func(http.Handler) http.Handler {
 	}
 }
 
-// buildLogEntry constructs a log message and fields for a request.
-func buildLogEntry(r *http.Request, duration int64) (string, []any) {
+// BuildLogEntry constructs a log message and fields for a request.
+func BuildLogEntry(r *http.Request, duration int64) (string, []any) {
 	reqID := chimware.GetReqID(r.Context())
 
 	scheme := "http"
